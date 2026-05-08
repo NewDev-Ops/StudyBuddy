@@ -10,5 +10,12 @@ class GoogleAuthController extends Controller
     public function handleGoogleToken(Request $request)
     {
         $request->validate(['token' => 'required|string']); //This helps to make sure that the data that comes to the server is the expected form of data
-    }
+
+        try{
+            $verifedToken = Firebase::auth()->verifyIdToken($request->token);
+            $uid = $verifedToken->claims()->get('sub');
+            $email = $verifedToken->claims()->get('email');
+        }
+
+        }
 }
