@@ -20,9 +20,13 @@ class GoogleAuthController extends Controller
             $email = $verifiedToken->claims()->get('email');
             $name = $verifiedToken->claims()->get('name');
 
+            // FIX: Search by email first to prevent integrity constraint collisions
             $user = User::updateOrCreate(
-                ['google_id' => $uid],
-                ['name' => $name, 'email' => $email]
+                ['email' => $email],
+                [
+                    'google_id' => $uid,
+                    'name' => $name
+                ]
             );
 
             Auth::login($user);
