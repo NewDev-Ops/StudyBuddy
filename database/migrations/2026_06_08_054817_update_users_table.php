@@ -6,25 +6,21 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('google_id')->nullable()->unique()->after('id');
+            $table->foreignId('university_id')->nullable()->constrained()->nullOnDelete();
+            $table->string('google_id')->nullable()->unique();
+            $table->tinyInteger('is_opted_in')->default(0);
             $table->string('password')->nullable()->change();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('google_id');
-            $table->string('password')->nullable(false)->change();
+            $table->dropForeign(['university_id']);
+            $table->dropColumn(['university_id', 'google_id', 'is_opted_in']);
         });
     }
 };
