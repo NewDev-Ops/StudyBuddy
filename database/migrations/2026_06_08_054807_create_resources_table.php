@@ -6,20 +6,18 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('resources', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('university_id')->nullable()->constrained()->nullOnDelete();
+            $table->string('title');
+            $table->string('url', 2048);
+            $table->string('subject_tag', 100);
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('resources');

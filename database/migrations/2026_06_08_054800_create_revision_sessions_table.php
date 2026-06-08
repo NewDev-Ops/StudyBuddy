@@ -6,20 +6,18 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('revision_sessions', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('subject_id')->constrained()->cascadeOnDelete();
+            $table->integer('duration_minutes');
+            $table->text('notes')->nullable();
+            $table->date('date');
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('revision_sessions');
