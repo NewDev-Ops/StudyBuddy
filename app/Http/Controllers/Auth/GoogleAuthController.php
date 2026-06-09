@@ -20,18 +20,25 @@ class GoogleAuthController extends Controller
             $email = $verifiedToken->claims()->get('email');
             $name = $verifiedToken->claims()->get('name');
 
-            // FIX: Search by email first to prevent integrity constraint collisions
             $user = User::updateOrCreate(
-                ['email' => $email],
-                [
-                    'google_id' => $uid,
-                    'name' => $name
-                ]
+                ['google_id' => $uid],
+                ['name' => $name, 'email' => $email]
             );
 
             Auth::login($user);
 
-            return response()->json(['success' => true, 'redirect' => '/dashboard']);
+            // Route based on role
+            if ($user->role === 'admin') {
+                return response()->json([
+                    'success' => true,
+                    'redirect' => '/admin/dashboard'
+                ]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'redirect' => '/dashboard'
+            ]);
 
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 401);
