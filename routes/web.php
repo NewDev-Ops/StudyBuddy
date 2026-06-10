@@ -33,9 +33,9 @@ Route::middleware(['auth', 'onboarding'])->group(function () {
     Route::post('/subjects', [OnboardingController::class, 'storeDashboardSubject'])->name('subjects.store');
     Route::delete('/subjects/{subject}', [OnboardingController::class, 'deleteSubject'])->name('subjects.destroy');
 
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit'); // not yet implemented
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update'); // not yet implemented
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy'); // not yet implemented
 });
 
 // Admin routes
