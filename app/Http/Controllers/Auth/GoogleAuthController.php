@@ -27,7 +27,6 @@ class GoogleAuthController extends Controller
 
             Auth::login($user);
 
-            // Route based on role
             if ($user->role === 'admin') {
                 return response()->json([
                     'success' => true,
@@ -35,9 +34,11 @@ class GoogleAuthController extends Controller
                 ]);
             }
 
+            $redirect = $user->hasCompletedOnboarding() ? '/dashboard' : '/onboarding/step1';
+
             return response()->json([
                 'success' => true,
-                'redirect' => '/dashboard'
+                'redirect' => $redirect
             ]);
 
         } catch (\Exception $e) {

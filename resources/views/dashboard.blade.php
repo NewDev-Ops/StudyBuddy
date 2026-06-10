@@ -99,54 +99,63 @@
                     {{-- Header --}}
                     <div class="flex items-center justify-between mb-2">
                         <h2 class="text-xl font-bold text-gray-900">My Subjects</h2>
-                        <span class="text-sm text-gray-500">5 Active Courses</span>
+                        <span class="text-sm text-gray-500">{{ $subjects->count() }} Active Course{{ $subjects->count() !== 1 ? 's' : '' }}</span>
                     </div>
 
-                    {{-- Subject Cards --}}
-                    @php
-                        $subjects = [
-                            ['name' => 'Computer Systems Architecture', 'last_revised' => '2 hours ago',   'average' => 82, 'color' => 'emerald'],
-                            ['name' => 'Statistical Inference',         'last_revised' => 'Yesterday',       'average' => 74, 'color' => 'emerald'],
-                            ['name' => 'Algorithms & Complexity',       'last_revised' => '3 days ago',      'average' => 68, 'color' => 'amber'],
-                            ['name' => 'Software Engineering',         'last_revised' => '5 days ago',      'average' => 91, 'color' => 'emerald'],
-                            ['name' => 'Machine Learning Basics',      'last_revised' => '1 week ago',      'average' => 59, 'color' => 'red'],
-                        ];
-                    @endphp
+                    {{-- Add Subject Form --}}
+                    <form method="POST" action="{{ route('subjects.store') }}" class="flex gap-2 animate-fade-in-up" style="animation-delay: 250ms">
+                        @csrf
+                        <input type="text" name="name" placeholder="Add a new subject..."
+                            class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" required>
+                        <button type="submit"
+                            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition text-sm font-semibold shrink-0">
+                            Add
+                        </button>
+                    </form>
 
-                    @foreach($subjects as $i => $subject)
-                        <a href="#"
-                           class="flex items-center justify-between bg-white rounded-xl shadow-sm border border-gray-100 p-4 hover:shadow-md hover:border-blue-200 transition-all duration-200 group animate-fade-in-up"
-                           style="animation-delay: {{ 300 + ($i * 100) }}ms">
-                            <div class="flex items-center gap-4">
-                                <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
-                                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <p class="text-sm font-semibold text-gray-900 group-hover:text-blue-600 transition">{{ $subject['name'] }}</p>
-                                    <div class="flex items-center gap-1.5 mt-0.5">
-                                        <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                        </svg>
-                                        <p class="text-xs text-gray-500">Last revised {{ $subject['last_revised'] }}</p>
+                    {{-- Subject Cards --}}
+                    @if($subjects->isNotEmpty())
+                        @foreach($subjects as $i => $subject)
+                            <div class="flex items-center justify-between bg-white rounded-xl shadow-sm border border-gray-100 p-4 hover:shadow-md hover:border-blue-200 transition-all duration-200 group animate-fade-in-up"
+                                 style="animation-delay: {{ 300 + ($i * 100) }}ms">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background-color: {{ $subject->color_code }}20">
+                                        <div class="w-3 h-3 rounded-full" style="background-color: {{ $subject->color_code }}"></div>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-semibold text-gray-900 group-hover:text-blue-600 transition">{{ $subject->name }}</p>
+                                        <div class="flex items-center gap-1.5 mt-0.5">
+                                            <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                            </svg>
+                                            <p class="text-xs text-gray-500">Added {{ $subject->created_at->diffForHumans() }}</p>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <div class="text-right">
-                                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Average</p>
-                                    <span class="inline-block mt-0.5 px-2.5 py-0.5 rounded-full text-xs font-bold
-                                        {{ $subject['average'] >= 80 ? 'text-emerald-700 bg-emerald-50' : ($subject['average'] >= 70 ? 'text-emerald-700 bg-emerald-50' : ($subject['average'] >= 60 ? 'text-amber-600 bg-amber-50' : 'text-red-500 bg-red-50')) }}">
-                                        {{ $subject['average'] }}%
-                                    </span>
+                                <div class="flex items-center gap-3">
+                                    <form method="POST" action="{{ route('subjects.destroy', $subject) }}" onsubmit="return confirm('Remove this subject?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-gray-300 hover:text-red-500 transition p-1">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                            </svg>
+                                        </button>
+                                    </form>
+                                    <svg class="w-4 h-4 text-gray-300 group-hover:text-blue-400 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                    </svg>
                                 </div>
-                                <svg class="w-4 h-4 text-gray-300 group-hover:text-blue-400 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                                </svg>
                             </div>
-                        </a>
-                    @endforeach
+                        @endforeach
+                    @else
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center animate-fade-in" style="animation-delay: 300ms">
+                            <svg class="w-10 h-10 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                            </svg>
+                            <p class="text-sm text-gray-500">No subjects yet. Add your first subject above!</p>
+                        </div>
+                    @endif
 
                     {{-- View All --}}
                     <div class="text-center pt-4 animate-fade-in" style="animation-delay: 900ms">
