@@ -40,8 +40,8 @@
         <!-- Terms -->
         <p class="text-xs text-center text-gray-400 mb-5 animate-fade-in" style="animation-delay: 450ms">
             By signing in, you agree to Revisor's
-            <a href="#" class="text-blue-600 hover:underline">Terms of Service</a> and
-            <a href="#" class="text-blue-600 hover:underline">Privacy Policy</a>
+            <span class="text-gray-400 cursor-not-allowed">Terms of Service</span> and
+            <span class="text-gray-400 cursor-not-allowed">Privacy Policy</span>
             regarding your academic data.
         </p>
 
@@ -50,9 +50,9 @@
     <!-- Footer -->
     <p class="text-xs text-gray-400 mt-6 animate-fade-in" style="animation-delay: 600ms">Helping students master their revision.</p>
     <div class="flex gap-4 mt-2 text-xs text-gray-400 animate-fade-in" style="animation-delay: 700ms">
-        <a href="#" class="hover:text-gray-600 uppercase tracking-wide">Support</a>
-        <a href="#" class="hover:text-gray-600 uppercase tracking-wide">Status</a>
-        <a href="#" class="hover:text-gray-600 uppercase tracking-wide">Academic Integrity</a>
+        <span class="uppercase tracking-wide cursor-not-allowed opacity-50">Support</span>
+        <span class="uppercase tracking-wide cursor-not-allowed opacity-50">Status</span>
+        <span class="uppercase tracking-wide cursor-not-allowed opacity-50">Academic Integrity</span>
     </div>
 
     <!-- Firebase -->

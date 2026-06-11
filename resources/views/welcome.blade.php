@@ -83,9 +83,9 @@
     <!-- Footer -->
     <p class="text-xs text-gray-400 mt-6 animate-fade-in" style="animation-delay: 900ms">Helping students master their revision.</p>
     <div class="flex gap-4 mt-2 text-xs text-gray-400 animate-fade-in" style="animation-delay: 1000ms">
-        <a href="#" class="hover:text-gray-600 uppercase tracking-wide">Support</a>
-        <a href="#" class="hover:text-gray-600 uppercase tracking-wide">Status</a>
-        <a href="#" class="hover:text-gray-600 uppercase tracking-wide">Academic Integrity</a>
+        <span class="uppercase tracking-wide cursor-not-allowed opacity-50">Support</span>
+        <span class="uppercase tracking-wide cursor-not-allowed opacity-50">Status</span>
+        <span class="uppercase tracking-wide cursor-not-allowed opacity-50">Academic Integrity</span>
     </div>
 
 </body>
