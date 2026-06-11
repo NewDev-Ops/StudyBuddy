@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Mark;
 use App\Models\RevisionSession;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -22,6 +23,13 @@ class StudentDashboardController extends Controller
             ->limit(10)
             ->get();
 
-        return view('dashboard', compact('subjects', 'university', 'recentSessions'));
+        $recentMarks = Mark::whereIn('subject_id', $subjectIds)
+            ->with('subject')
+            ->latest('date')
+            ->latest('created_at')
+            ->limit(10)
+            ->get();
+
+        return view('dashboard', compact('subjects', 'university', 'recentSessions', 'recentMarks'));
     }
 }

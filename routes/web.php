@@ -6,6 +6,7 @@ use App\Http\Controllers\StudentDashboardController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\RevisionSessionController;
+use App\Http\Controllers\MarkController;
 use Illuminate\Support\Facades\Route;
 
 // Landing page
@@ -36,6 +37,9 @@ Route::middleware(['auth', 'onboarding'])->group(function () {
 
     Route::post('/revision-sessions', [RevisionSessionController::class, 'store'])->name('revision-sessions.store');
     Route::delete('/revision-sessions/{revisionSession}', [RevisionSessionController::class, 'destroy'])->name('revision-sessions.destroy');
+
+    Route::post('/marks', [MarkController::class, 'store'])->name('marks.store');
+    Route::delete('/marks/{mark}', [MarkController::class, 'destroy'])->name('marks.destroy');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit'); // not yet implemented
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update'); // not yet implemented

@@ -179,13 +179,13 @@
                                 </svg>
                                 Log Revision Session
                             </button>
-                            <a href="#"
+                            <button onclick="document.getElementById('record-mark-modal').classList.remove('hidden')"
                                class="flex items-center justify-center gap-2 w-full border-2 border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold py-2.5 rounded-lg transition text-sm">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                                 </svg>
                                 Record a Mark
-                            </a>
+                            </button>
                         </div>
 
                         {{-- Study Wrapped --}}
@@ -236,6 +236,42 @@
                             </div>
                         @else
                             <p class="text-xs text-gray-400 text-center py-3">No sessions logged yet.</p>
+                        @endif
+                    </div>
+
+                    {{-- Recent Marks --}}
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+                        <h4 class="text-xs font-bold text-gray-900 uppercase tracking-wider mb-4">Recent Marks</h4>
+                        @if($recentMarks->isNotEmpty())
+                            <div class="space-y-3">
+                                @foreach($recentMarks as $mark)
+                                    <div class="flex items-center justify-between group">
+                                        <div class="flex items-center gap-3 min-w-0">
+                                            <div class="w-2 h-2 rounded-full shrink-0" style="background-color: {{ $mark->subject->color_code }}"></div>
+                                            <div class="min-w-0">
+                                                <p class="text-sm font-medium text-gray-900 truncate">{{ $mark->assessment_name }}</p>
+                                                <p class="text-xs text-gray-500">{{ $mark->subject->name }} &middot; {{ $mark->date->format('M d') }}</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-xs font-bold {{ $mark->percentage() >= 70 ? 'text-emerald-600' : ($mark->percentage() >= 50 ? 'text-amber-600' : 'text-red-500') }}">
+                                                {{ $mark->percentage() }}%
+                                            </span>
+                                            <form method="POST" action="{{ route('marks.destroy', $mark) }}" onsubmit="return confirm('Delete this mark?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="text-gray-300 hover:text-red-500 transition opacity-0 group-hover:opacity-100 p-1">
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                                    </svg>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <p class="text-xs text-gray-400 text-center py-3">No marks recorded yet.</p>
                         @endif
                     </div>
                 </aside>
@@ -318,6 +354,111 @@
                     <button type="submit"
                         class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg transition text-sm">
                         Save Session
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {{-- ============================================================ --}}
+    {{-- Record a Mark Modal                                           --}}
+    {{-- ============================================================ --}}
+    <div id="record-mark-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/40" onclick="document.getElementById('record-mark-modal').classList.add('hidden')"></div>
+        <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-md p-6 animate-fade-in-up">
+            <div class="flex items-center justify-between mb-5">
+                <h3 class="text-lg font-bold text-gray-900">Record a Mark</h3>
+                <button onclick="document.getElementById('record-mark-modal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600 transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            <form method="POST" action="{{ route('marks.store') }}">
+                @csrf
+                <div class="space-y-4">
+                    {{-- Subject --}}
+                    <div>
+                        <label for="mark_subject_id" class="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+                        <select name="subject_id" id="mark_subject_id" required
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                            <option value="">Select a subject</option>
+                            @foreach($subjects as $subject)
+                                <option value="{{ $subject->id }}" {{ old('subject_id') == $subject->id ? 'selected' : '' }}>
+                                    {{ $subject->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('subject_id')
+                            <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    {{-- Assessment Name --}}
+                    <div>
+                        <label for="assessment_name" class="block text-sm font-medium text-gray-700 mb-1">Assessment Name</label>
+                        <input type="text" name="assessment_name" id="assessment_name" value="{{ old('assessment_name') }}" placeholder="e.g. Midterm Exam" required
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                        @error('assessment_name')
+                            <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    {{-- Type --}}
+                    <div>
+                        <label for="type" class="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                        <select name="type" id="type" required
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                            <option value="">Select type</option>
+                            @foreach(['Exam', 'Quiz', 'Assignment', 'Project', 'Coursework', 'Test', 'Other'] as $t)
+                                <option value="{{ $t }}" {{ old('type') == $t ? 'selected' : '' }}>{{ $t }}</option>
+                            @endforeach
+                        </select>
+                        @error('type')
+                            <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    {{-- Score / Max Score --}}
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label for="score" class="block text-sm font-medium text-gray-700 mb-1">Score</label>
+                            <input type="number" name="score" id="score" value="{{ old('score') }}" min="0" required
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                            @error('score')
+                                <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div>
+                            <label for="max_score" class="block text-sm font-medium text-gray-700 mb-1">Max Score</label>
+                            <input type="number" name="max_score" id="max_score" value="{{ old('max_score', 100) }}" min="1" required
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                            @error('max_score')
+                                <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+
+                    {{-- Date --}}
+                    <div>
+                        <label for="mark_date" class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                        <input type="date" name="date" id="mark_date" value="{{ old('date', now()->format('Y-m-d')) }}" max="{{ now()->format('Y-m-d') }}" required
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                        @error('date')
+                            <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+
+                <div class="flex gap-3 mt-6">
+                    <button type="button" onclick="document.getElementById('record-mark-modal').classList.add('hidden')"
+                        class="flex-1 border border-gray-300 text-gray-700 font-semibold py-2.5 rounded-lg transition text-sm hover:bg-gray-50">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                        class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg transition text-sm">
+                        Save Mark
                     </button>
                 </div>
             </form>

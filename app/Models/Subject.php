@@ -19,4 +19,9 @@ class Subject extends Model
     {
         return $this->hasMany(RevisionSession::class);
     }
+
+    public function marks(): HasMany
+    {
+        return $this->hasMany(Mark::class);
+    }
 }
