@@ -41,10 +41,12 @@ Route::middleware(['auth', 'onboarding'])->group(function () {
     Route::post('/marks', [MarkController::class, 'store'])->name('marks.store');
     Route::delete('/marks/{mark}', [MarkController::class, 'destroy'])->name('marks.destroy');
 
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit'); // not yet implemented
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update'); // not yet implemented
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy'); // not yet implemented
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+Route::middleware(['auth'])->get('/subjects/search', [OnboardingController::class, 'search'])->name('subjects.search');
 
 // Admin routes
 Route::middleware(['auth', 'onboarding', \App\Http\Middleware\AdminMiddleware::class])->prefix('admin')->group(function () {

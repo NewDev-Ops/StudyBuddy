@@ -114,6 +114,28 @@ class OnboardingController extends Controller
         return redirect()->route('dashboard');
     }
 
+    public function search(Request $request)
+    {
+        $query = $request->input('q', '');
+
+        if (strlen($query) < 2) {
+            return response()->json([]);
+        }
+
+        $userSubjects = Auth::user()->subjects()->pluck('name')->map(fn ($n) => strtolower($n))->toArray();
+
+        $results = Subject::whereRaw('LOWER(name) LIKE ?', ['%' . strtolower($query) . '%'])
+            ->select('name')
+            ->groupBy('name')
+            ->orderByRaw('COUNT(*) DESC')
+            ->limit(8)
+            ->pluck('name')
+            ->filter(fn ($name) => !in_array(strtolower($name), $userSubjects))
+            ->values();
+
+        return response()->json($results);
+    }
+
     public function complete()
     {
         Auth::user()->update(['is_opted_in' => true]);

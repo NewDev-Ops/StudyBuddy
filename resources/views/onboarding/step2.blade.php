@@ -29,21 +29,37 @@
         </div>
 
         {{-- Add Subject Form --}}
-        <form method="POST" action="{{ route('onboarding.storeSubject') }}" class="mb-5 animate-fade-in-up" style="animation-delay: 200ms">
-            @csrf
-            <div class="flex gap-2">
-                <input type="text" name="name" value="{{ old('name') }}" placeholder="e.g. Computer Science"
-                    class="flex-1 border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                    required>
-                <button type="submit"
-                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg transition text-sm font-semibold shrink-0">
-                    Add
-                </button>
-            </div>
-            @error('name')
-                <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
-            @enderror
-        </form>
+        <div class="mb-5 animate-fade-in-up" style="animation-delay: 200ms" x-data="subjectSearch()" @click.away="showDropdown = false">
+            <form method="POST" action="{{ route('onboarding.storeSubject') }}">
+                @csrf
+                <div class="flex gap-2">
+                    <div class="flex-1 relative">
+                        <input type="text" name="name" value="{{ old('name') }}" placeholder="e.g. Computer Science"
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                            required x-model="query" @input="search">
+                        <div x-show="showDropdown && results.length > 0" x-transition
+                            class="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                            <template x-for="result in results" :key="result">
+                                <button type="button" @mousedown.prevent="selectSuggestion(result)"
+                                    class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition flex items-center gap-2">
+                                    <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                                    </svg>
+                                    <span x-text="result"></span>
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+                    <button type="submit"
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg transition text-sm font-semibold shrink-0">
+                        Add
+                    </button>
+                </div>
+                @error('name')
+                    <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                @enderror
+            </form>
+        </div>
 
         {{-- Suggested Subjects --}}
         @if($suggestedSubjects->isNotEmpty())
@@ -102,5 +118,39 @@
         </div>
     </div>
 
+    <script>
+        function subjectSearch() {
+            return {
+                query: '',
+                results: [],
+                showDropdown: false,
+                search: async function() {
+                    if (this.query.length < 2) {
+                        this.results = [];
+                        this.showDropdown = false;
+                        return;
+                    }
+                    try {
+                        const response = await fetch('{{ route("subjects.search") }}?q=' + encodeURIComponent(this.query), {
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                            }
+                        });
+                        this.results = await response.json();
+                        this.showDropdown = this.results.length > 0;
+                    } catch (e) {
+                        this.results = [];
+                        this.showDropdown = false;
+                    }
+                },
+                selectSuggestion: function(value) {
+                    this.query = value;
+                    this.showDropdown = false;
+                }
+            }
+        }
+    </script>
 </body>
 </html>

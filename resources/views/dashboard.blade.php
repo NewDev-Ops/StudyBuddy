@@ -103,15 +103,32 @@
                     </div>
 
                     {{-- Add Subject Form --}}
-                    <form method="POST" action="{{ route('subjects.store') }}" class="flex gap-2 animate-fade-in-up" style="animation-delay: 250ms">
-                        @csrf
-                        <input type="text" name="name" placeholder="Add a new subject..."
-                            class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" required>
-                        <button type="submit"
-                            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition text-sm font-semibold shrink-0">
-                            Add
-                        </button>
-                    </form>
+                    <div class="animate-fade-in-up relative z-20" style="animation-delay: 250ms" x-data="subjectSearch()" @click.away="showDropdown = false">
+                        <form method="POST" action="{{ route('subjects.store') }}" class="flex gap-2">
+                            @csrf
+                            <div class="flex-1 relative">
+                                <input type="text" name="name" placeholder="Add a new subject..."
+                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                                    required x-model="query" @input="search">
+                                <div x-show="showDropdown && results.length > 0" x-transition
+                                    class="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                                    <template x-for="result in results" :key="result">
+                                        <button type="button" @mousedown.prevent="selectSuggestion(result)"
+                                            class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition flex items-center gap-2">
+                                            <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                                            </svg>
+                                            <span x-text="result"></span>
+                                        </button>
+                                    </template>
+                                </div>
+                            </div>
+                            <button type="submit"
+                                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition text-sm font-semibold shrink-0">
+                                Add
+                            </button>
+                        </form>
+                    </div>
 
                     {{-- Subject Cards --}}
                     @if($subjects->isNotEmpty())
@@ -149,7 +166,7 @@
                             </div>
                         @endforeach
                     @else
-                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center animate-fade-in" style="animation-delay: 300ms">
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center animate-fade-in relative z-0" style="animation-delay: 300ms">
                             <svg class="w-10 h-10 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
                             </svg>
@@ -481,4 +498,39 @@
             });
         </script>
     @endif
+
+    <script>
+        function subjectSearch() {
+            return {
+                query: '',
+                results: [],
+                showDropdown: false,
+                search: async function() {
+                    if (this.query.length < 2) {
+                        this.results = [];
+                        this.showDropdown = false;
+                        return;
+                    }
+                    try {
+                        const response = await fetch('{{ route("subjects.search") }}?q=' + encodeURIComponent(this.query), {
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                            }
+                        });
+                        this.results = await response.json();
+                        this.showDropdown = this.results.length > 0;
+                    } catch (e) {
+                        this.results = [];
+                        this.showDropdown = false;
+                    }
+                },
+                selectSuggestion: function(value) {
+                    this.query = value;
+                    this.showDropdown = false;
+                }
+            }
+        }
+    </script>
 </x-app-layout>
