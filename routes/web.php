@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\StudentDashboardController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\OnboardingController;
+use App\Http\Controllers\RevisionSessionController;
 use Illuminate\Support\Facades\Route;
 
 // Landing page
@@ -32,6 +33,9 @@ Route::middleware(['auth', 'onboarding'])->group(function () {
 
     Route::post('/subjects', [OnboardingController::class, 'storeDashboardSubject'])->name('subjects.store');
     Route::delete('/subjects/{subject}', [OnboardingController::class, 'deleteSubject'])->name('subjects.destroy');
+
+    Route::post('/revision-sessions', [RevisionSessionController::class, 'store'])->name('revision-sessions.store');
+    Route::delete('/revision-sessions/{revisionSession}', [RevisionSessionController::class, 'destroy'])->name('revision-sessions.destroy');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit'); // not yet implemented
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update'); // not yet implemented

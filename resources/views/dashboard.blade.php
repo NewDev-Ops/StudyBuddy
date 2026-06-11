@@ -166,19 +166,19 @@
                 </main>
 
                 {{-- ============================================================ --}}
-                {{-- RIGHT SIDEBAR — Quick Actions                                  --}}
+                {{-- RIGHT SIDEBAR — Quick Actions + Recent Sessions              --}}
                 {{-- ============================================================ --}}
                 <aside class="lg:col-span-3 space-y-5 animate-fade-in-up" style="animation-delay: 300ms">
                     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
                         <h4 class="text-xs font-bold text-gray-900 uppercase tracking-wider mb-4">Quick Actions</h4>
                         <div class="space-y-3">
-                            <a href="#"
+                            <button onclick="document.getElementById('log-revision-modal').classList.remove('hidden')"
                                class="flex items-center justify-center gap-2 w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg transition text-sm">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                                 </svg>
                                 Log Revision Session
-                            </a>
+                            </button>
                             <a href="#"
                                class="flex items-center justify-center gap-2 w-full border-2 border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold py-2.5 rounded-lg transition text-sm">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -207,9 +207,120 @@
                             <p class="text-xs text-gray-500 mt-2">View semester highlights</p>
                         </div>
                     </div>
+
+                    {{-- Recent Sessions --}}
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+                        <h4 class="text-xs font-bold text-gray-900 uppercase tracking-wider mb-4">Recent Sessions</h4>
+                        @if($recentSessions->isNotEmpty())
+                            <div class="space-y-3">
+                                @foreach($recentSessions as $session)
+                                    <div class="flex items-center justify-between group">
+                                        <div class="flex items-center gap-3 min-w-0">
+                                            <div class="w-2 h-2 rounded-full shrink-0" style="background-color: {{ $session->subject->color_code }}"></div>
+                                            <div class="min-w-0">
+                                                <p class="text-sm font-medium text-gray-900 truncate">{{ $session->subject->name }}</p>
+                                                <p class="text-xs text-gray-500">{{ $session->duration_minutes }}m &middot; {{ $session->date->format('M d') }}</p>
+                                            </div>
+                                        </div>
+                                        <form method="POST" action="{{ route('revision-sessions.destroy', $session) }}" onsubmit="return confirm('Delete this session?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="text-gray-300 hover:text-red-500 transition opacity-0 group-hover:opacity-100 p-1">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                                </svg>
+                                            </button>
+                                        </form>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <p class="text-xs text-gray-400 text-center py-3">No sessions logged yet.</p>
+                        @endif
+                    </div>
                 </aside>
 
             </div>
+        </div>
+    </div>
+
+    {{-- ============================================================ --}}
+    {{-- Log Revision Session Modal                                    --}}
+    {{-- ============================================================ --}}
+    <div id="log-revision-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/40" onclick="document.getElementById('log-revision-modal').classList.add('hidden')"></div>
+        <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-md p-6 animate-fade-in-up">
+            <div class="flex items-center justify-between mb-5">
+                <h3 class="text-lg font-bold text-gray-900">Log Revision Session</h3>
+                <button onclick="document.getElementById('log-revision-modal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600 transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            <form method="POST" action="{{ route('revision-sessions.store') }}">
+                @csrf
+                <div class="space-y-4">
+                    {{-- Subject --}}
+                    <div>
+                        <label for="subject_id" class="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+                        <select name="subject_id" id="subject_id" required
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                            <option value="">Select a subject</option>
+                            @foreach($subjects as $subject)
+                                <option value="{{ $subject->id }}" {{ old('subject_id') == $subject->id ? 'selected' : '' }}>
+                                    {{ $subject->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('subject_id')
+                            <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    {{-- Duration --}}
+                    <div>
+                        <label for="duration_minutes" class="block text-sm font-medium text-gray-700 mb-1">Duration (minutes)</label>
+                        <input type="number" name="duration_minutes" id="duration_minutes" value="{{ old('duration_minutes', 30) }}" min="1" max="1440" required
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                        @error('duration_minutes')
+                            <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    {{-- Date --}}
+                    <div>
+                        <label for="date" class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                        <input type="date" name="date" id="date" value="{{ old('date', now()->format('Y-m-d')) }}" max="{{ now()->format('Y-m-d') }}" required
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                        @error('date')
+                            <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    {{-- Notes --}}
+                    <div>
+                        <label for="notes" class="block text-sm font-medium text-gray-700 mb-1">Notes <span class="text-gray-400 font-normal">(optional)</span></label>
+                        <textarea name="notes" id="notes" rows="3" maxlength="1000" placeholder="What did you cover?"
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition resize-none">{{ old('notes') }}</textarea>
+                        @error('notes')
+                            <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+
+                <div class="flex gap-3 mt-6">
+                    <button type="button" onclick="document.getElementById('log-revision-modal').classList.add('hidden')"
+                        class="flex-1 border border-gray-300 text-gray-700 font-semibold py-2.5 rounded-lg transition text-sm hover:bg-gray-50">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                        class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg transition text-sm">
+                        Save Session
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -217,4 +328,16 @@
     <div class="py-6 border-t border-gray-200 animate-fade-in" style="animation-delay: 1000ms">
         <p class="text-center text-xs text-gray-400">&copy; 2026 Revisor Academic Tracking. All rights reserved.</p>
     </div>
+
+    @if(session('success'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const toast = document.createElement('div');
+                toast.className = 'fixed top-4 right-4 z-50 bg-emerald-600 text-white px-4 py-3 rounded-lg shadow-lg text-sm font-medium animate-fade-in-up';
+                toast.textContent = '{{ session('success') }}';
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 3000);
+            });
+        </script>
+    @endif
 </x-app-layout>
