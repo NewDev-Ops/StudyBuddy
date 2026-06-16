@@ -67,5 +67,6 @@
         </form>
     </div>
 
+    <x-coming-soon-modal />
 </body>
 </html>

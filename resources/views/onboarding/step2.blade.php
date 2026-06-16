@@ -152,5 +152,7 @@
             }
         }
     </script>
+
+    <x-coming-soon-modal />
 </body>
 </html>

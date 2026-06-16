@@ -40,8 +40,8 @@
         <!-- Terms -->
         <p class="text-xs text-center text-gray-400 mb-5 animate-fade-in" style="animation-delay: 450ms">
             By signing in, you agree to Revisor's
-            <span class="text-gray-400 cursor-not-allowed">Terms of Service</span> and
-            <span class="text-gray-400 cursor-not-allowed">Privacy Policy</span>
+            <button @click="$dispatch('coming-soon')" class="text-gray-400 hover:text-blue-500 transition underline">Terms of Service</button> and
+            <button @click="$dispatch('coming-soon')" class="text-gray-400 hover:text-blue-500 transition underline">Privacy Policy</button>
             regarding your academic data.
         </p>
 
@@ -50,9 +50,9 @@
     <!-- Footer -->
     <p class="text-xs text-gray-400 mt-6 animate-fade-in" style="animation-delay: 600ms">Helping students master their revision.</p>
     <div class="flex gap-4 mt-2 text-xs text-gray-400 animate-fade-in" style="animation-delay: 700ms">
-        <span class="uppercase tracking-wide cursor-not-allowed opacity-50">Support</span>
-        <span class="uppercase tracking-wide cursor-not-allowed opacity-50">Status</span>
-        <span class="uppercase tracking-wide cursor-not-allowed opacity-50">Academic Integrity</span>
+        <button @click="$dispatch('coming-soon')" class="uppercase tracking-wide hover:text-blue-500 transition">Support</button>
+        <button @click="$dispatch('coming-soon')" class="uppercase tracking-wide hover:text-blue-500 transition">Status</button>
+        <button @click="$dispatch('coming-soon')" class="uppercase tracking-wide hover:text-blue-500 transition">Academic Integrity</button>
     </div>
 
     <!-- Firebase -->
@@ -90,5 +90,7 @@
 
         document.getElementById('google-signin-btn').addEventListener('click', handleGoogleSignIn);
     </script>
+
+    <x-coming-soon-modal />
 </body>
 </html>

@@ -1,1 +1,1 @@
-"import axios from 'axios'; window.axios = axios; window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';" 
+// Axios import removed — not used in this app; all AJAX uses fetch() via Alpine

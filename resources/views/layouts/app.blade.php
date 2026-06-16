@@ -32,5 +32,7 @@
                 {{ $slot }}
             </main>
         </div>
+
+        <x-coming-soon-modal />
     </body>
 </html>

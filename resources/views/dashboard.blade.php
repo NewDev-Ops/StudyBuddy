@@ -28,12 +28,13 @@
                             <p class="text-[10px] font-bold text-blue-600 uppercase tracking-wider mb-1">Recommended</p>
                             <p class="text-sm font-bold text-gray-900 leading-snug">Dummy &amp; Text</p>
                             <p class="text-xs text-gray-500 mt-1">Focus on Dynamic Programming. Last reviewed 3 days ago.</p>
-                            <span class="inline-flex items-center gap-1 text-sm font-semibold text-gray-400 mt-3 cursor-not-allowed">
+                            <button @click="$dispatch('coming-soon')"
+                                class="inline-flex items-center gap-1 text-sm font-semibold text-gray-400 mt-3 hover:text-blue-600 transition">
                                 Start Session
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                                 </svg>
-                            </span>
+                            </button>
                         </div>
 
                         {{-- Quick Resources --}}
@@ -45,22 +46,24 @@
                                 <h4 class="text-xs font-bold text-gray-900 uppercase tracking-wider">Quick Resources</h4>
                             </div>
                             <div class="space-y-2">
-                                <span class="flex items-center gap-3 p-2 rounded-lg cursor-not-allowed opacity-50">
+                                <button @click="$dispatch('coming-soon')"
+                                    class="flex items-center gap-3 p-2 rounded-lg w-full text-left hover:bg-gray-50 transition">
                                     <div class="bg-gray-100 rounded-lg p-1.5">
                                         <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                                         </svg>
                                     </div>
                                     <span class="text-sm text-gray-400">Resource 1</span>
-                                </span>
-                                <span class="flex items-center gap-3 p-2 rounded-lg cursor-not-allowed opacity-50">
+                                </button>
+                                <button @click="$dispatch('coming-soon')"
+                                    class="flex items-center gap-3 p-2 rounded-lg w-full text-left hover:bg-gray-50 transition">
                                     <div class="bg-gray-100 rounded-lg p-1.5">
                                         <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
                                         </svg>
                                     </div>
                                     <span class="text-sm text-gray-400">Resource 2</span>
-                                </span>
+                                </button>
                             </div>
                         </div>
 
@@ -73,20 +76,22 @@
                                 <h4 class="text-xs font-bold text-gray-900 uppercase tracking-wider">Peer Insights</h4>
                             </div>
                             <div class="space-y-3">
-                                <div class="flex items-center gap-3">
+                                <button @click="$dispatch('coming-soon')"
+                                    class="flex items-center gap-3 w-full text-left hover:bg-gray-50 rounded-lg p-1 -ml-1 transition">
                                     <div class="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center text-xs font-bold text-blue-700">SJ</div>
                                     <div>
                                         <p class="text-sm font-medium text-gray-900">Person 1</p>
-                                        <p class="text-xs text-gray-500">{{ $university->name }}</p>
+                                        <p class="text-xs text-gray-500">{{ $university?->name ?? 'Your University' }}</p>
                                     </div>
-                                </div>
-                                <div class="flex items-center gap-3">
+                                </button>
+                                <button @click="$dispatch('coming-soon')"
+                                    class="flex items-center gap-3 w-full text-left hover:bg-gray-50 rounded-lg p-1 -ml-1 transition">
                                     <div class="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center text-xs font-bold text-blue-700">MC</div>
                                     <div>
                                         <p class="text-sm font-medium text-gray-900">Person 2</p>
-                                        <p class="text-xs text-gray-500">{{ $university->name }}</p>
+                                        <p class="text-xs text-gray-500">{{ $university?->name ?? 'Your University' }}</p>
                                     </div>
-                                </div>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -149,20 +154,15 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="flex items-center gap-3">
-                                    <form method="POST" action="{{ route('subjects.destroy', $subject) }}" onsubmit="return confirm('Remove this subject?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="text-gray-300 hover:text-red-500 transition p-1">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                                            </svg>
-                                        </button>
-                                    </form>
-                                    <svg class="w-4 h-4 text-gray-300 group-hover:text-blue-400 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                                    </svg>
-                                </div>
+                                <form method="POST" action="{{ route('subjects.destroy', $subject) }}" onsubmit="return confirm('Remove this subject?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="text-gray-300 hover:text-red-500 transition p-1">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                        </svg>
+                                    </button>
+                                </form>
                             </div>
                         @endforeach
                     @else
@@ -176,9 +176,10 @@
 
                     {{-- View All --}}
                     <div class="text-center pt-4 animate-fade-in" style="animation-delay: 900ms">
-                        <span class="text-sm font-medium text-gray-400 cursor-not-allowed">
+                        <button @click="$dispatch('coming-soon')"
+                            class="text-sm font-medium text-gray-400 hover:text-blue-600 transition">
                             View All Academic History
-                        </span>
+                        </button>
                     </div>
                 </main>
 
@@ -206,7 +207,8 @@
                         </div>
 
                         {{-- Study Wrapped --}}
-                        <div class="mt-5 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-100 opacity-60 cursor-not-allowed">
+                        <button @click="$dispatch('coming-soon')"
+                            class="mt-5 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-100 w-full text-left hover:from-blue-100 hover:to-indigo-100 transition">
                             <div class="flex items-center gap-3">
                                 <div class="w-10 h-10 rounded-xl bg-blue-400 flex items-center justify-center">
                                     <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -222,7 +224,7 @@
                                 </svg>
                             </div>
                             <p class="text-xs text-gray-400 mt-2">View semester highlights</p>
-                        </div>
+                        </button>
                     </div>
 
                     {{-- Recent Sessions --}}
