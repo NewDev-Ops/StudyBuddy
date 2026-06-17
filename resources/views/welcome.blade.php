@@ -80,14 +80,6 @@
 
     </div>
 
-    <!-- Footer -->
-    <p class="text-xs text-gray-400 mt-6 animate-fade-in" style="animation-delay: 900ms">Helping students master their revision.</p>
-    <div class="flex gap-4 mt-2 text-xs text-gray-400 animate-fade-in" style="animation-delay: 1000ms">
-        <button @click="$dispatch('coming-soon')" class="uppercase tracking-wide hover:text-blue-500 transition">Support</button>
-        <button @click="$dispatch('coming-soon')" class="uppercase tracking-wide hover:text-blue-500 transition">Status</button>
-        <button @click="$dispatch('coming-soon')" class="uppercase tracking-wide hover:text-blue-500 transition">Academic Integrity</button>
-    </div>
-
     <x-coming-soon-modal />
 </body>
 </html>

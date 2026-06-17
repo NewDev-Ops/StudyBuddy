@@ -50,6 +50,6 @@ class User extends Authenticatable
 
     public function hasCompletedOnboarding(): bool
     {
-        return $this->university_id !== null || $this->subjects()->exists();
+        return $this->subjects()->exists() || $this->is_opted_in;
     }
 }

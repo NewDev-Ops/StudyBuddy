@@ -18,7 +18,7 @@ class OnboardingController extends Controller
     public function storeStep1(Request $request)
     {
         $request->validate([
-            'university_id' => 'nullable|exists:universities,id',
+            'university_id' => 'required|exists:universities,id',
         ]);
 
         Auth::user()->update([
