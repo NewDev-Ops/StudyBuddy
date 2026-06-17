@@ -174,13 +174,6 @@
                         </div>
                     @endif
 
-                    {{-- View All --}}
-                    <div class="text-center pt-4 animate-fade-in" style="animation-delay: 900ms">
-                        <button @click="$dispatch('coming-soon')"
-                            class="text-sm font-medium text-gray-400 hover:text-blue-600 transition">
-                            View All Academic History
-                        </button>
-                    </div>
                 </main>
 
                 {{-- ============================================================ --}}
