@@ -61,6 +61,7 @@
         </div>
 
         <!-- CTA Button -->
+        @guest
         <a href="{{ route('login') }}"
             class="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg transition text-sm animate-fade-in-up"
             style="animation-delay: 660ms">
@@ -69,12 +70,16 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
             </svg>
         </a>
+        @endguest
 
         @auth
         <a href="{{ route('dashboard') }}"
-            class="w-full flex items-center justify-center mt-3 text-sm text-blue-600 hover:underline animate-fade-in"
-            style="animation-delay: 780ms">
-            Go to my Dashboard →
+            class="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg transition text-sm animate-fade-in-up"
+            style="animation-delay: 660ms">
+            Go to my Dashboard
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
         </a>
         @endauth
 
