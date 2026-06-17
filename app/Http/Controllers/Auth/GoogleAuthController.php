@@ -41,6 +41,13 @@ class GoogleAuthController extends Controller
                 'redirect' => $redirect
             ]);
 
+        } catch (\Kreait\Firebase\Exception\Auth\FailedToVerifyToken $e) {
+            if (str_contains($e->getMessage(), 'issued in the future')) {
+                return response()->json([
+                    'error' => 'Your computer\'s clock is out of sync. Please sync your system time and try again.'
+                ], 401);
+            }
+            return response()->json(['error' => $e->getMessage()], 401);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 401);
         }

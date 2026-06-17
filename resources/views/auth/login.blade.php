@@ -9,6 +9,21 @@
 </head>
 <body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center py-12 px-4">
 
+    <!-- Error Toast -->
+    <div id="error-toast" class="hidden fixed top-4 right-4 z-50 bg-red-50 border border-red-200 text-red-700 px-5 py-3 rounded-lg shadow-lg text-sm max-w-sm animate-fade-in" role="alert">
+        <div class="flex items-start gap-3">
+            <svg class="w-5 h-5 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+            </svg>
+            <span id="error-message" class="flex-1"></span>
+            <button onclick="this.parentElement.parentElement.classList.add('hidden')" class="text-red-400 hover:text-red-600">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
     <!-- Card -->
     <div class="bg-white rounded-2xl shadow-md w-full max-w-sm px-8 py-10 animate-fade-in-up">
 
@@ -66,10 +81,17 @@
                 });
                 const data = await response.json();
                 if (data.success) window.location.href = data.redirect;
-                else alert('Sign-in failed: ' + data.error);
+                else showError(data.error);
             } catch (error) {
-                alert('Error: ' + error.message);
+                showError(error.message);
             }
+        }
+
+        function showError(msg) {
+            const toast = document.getElementById('error-toast');
+            document.getElementById('error-message').textContent = msg;
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 8000);
         }
 
         document.getElementById('google-signin-btn').addEventListener('click', handleGoogleSignIn);
