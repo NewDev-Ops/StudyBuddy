@@ -53,4 +53,12 @@ class ProfileController extends Controller
 
         return Redirect::to('/');
     }
+
+    public function togglePeerNetwork(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+        $user->update(['is_opted_in' => !$user->is_opted_in]);
+
+        return Redirect::route('profile.edit')->with('status', 'peer-network-updated');
+    }
 }
