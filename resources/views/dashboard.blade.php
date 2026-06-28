@@ -83,6 +83,11 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
                                 </svg>
                                 <h4 class="text-xs font-bold text-gray-900 uppercase tracking-wider">Peer Insights</h4>
+                                @if($peerComparisonMode === 'relative')
+                                    <span class="inline-block ml-1 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-blue-600 bg-blue-50 rounded">Students scoring higher than you</span>
+                                @elseif($peerComparisonMode === 'absolute')
+                                    <span class="inline-block ml-1 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-amber-600 bg-amber-50 rounded">Top performers in this subject</span>
+                                @endif
                             </div>
                             <div class="space-y-3">
                                 @forelse($peerSuggestions as $peer)

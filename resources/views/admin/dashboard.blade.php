@@ -51,7 +51,26 @@
         </div>
 
         <!-- Management cards -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <a href="{{ route('admin.users') }}"
+                class="bg-white rounded-xl shadow-sm p-5 hover:shadow-md transition border border-gray-100 group">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
+                        <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-gray-900 group-hover:text-purple-600 transition">Users</h3>
+                        <p class="text-xs text-gray-400">{{ \App\Models\User::count() }} total</p>
+                    </div>
+                    <svg class="w-4 h-4 text-gray-300 ml-auto group-hover:text-purple-500 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                </div>
+                <p class="text-xs text-gray-400">Promote or demote admin users.</p>
+            </a>
+
             <a href="{{ route('admin.universities') }}"
                 class="bg-white rounded-xl shadow-sm p-5 hover:shadow-md transition border border-gray-100 group">
                 <div class="flex items-center gap-3 mb-3">

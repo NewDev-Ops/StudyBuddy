@@ -67,6 +67,10 @@ Route::middleware(['auth', 'onboarding', \App\Http\Middleware\AdminMiddleware::c
 
     Route::get('/peer-network', [\App\Http\Controllers\AdminPeerNetworkController::class, 'index'])->name('peer-network');
     Route::patch('/peer-network/{user}/remove', [\App\Http\Controllers\AdminPeerNetworkController::class, 'remove'])->name('peer-network.remove');
+
+    Route::get('/users', [\App\Http\Controllers\AdminUserController::class, 'index'])->name('users');
+    Route::post('/users/{user}/promote', [\App\Http\Controllers\AdminUserController::class, 'promote'])->name('users.promote');
+    Route::post('/users/{user}/demote', [\App\Http\Controllers\AdminUserController::class, 'demote'])->name('users.demote');
 });
 
 require __DIR__.'/auth.php';

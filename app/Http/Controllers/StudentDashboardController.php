@@ -43,7 +43,30 @@ class StudentDashboardController extends Controller
         }
 
         $peerSuggestions = collect();
+        $peerComparisonMode = null;
         if ($suggestedSubject && $suggestedSubject->normalized_name) {
+            $studentAvg = DB::selectOne("
+                SELECT ROUND(AVG(m.score * 100.0 / m.max_score), 1) AS avg_percentage
+                FROM marks m
+                INNER JOIN subjects s ON s.id = m.subject_id AND s.normalized_name = ?
+                WHERE s.user_id = ?
+            ", [
+                $suggestedSubject->normalized_name,
+                $user->id,
+            ]);
+
+            $studentHasMark = $studentAvg && $studentAvg->avg_percentage !== null;
+
+            if ($studentHasMark) {
+                $threshold = $studentAvg->avg_percentage;
+                $comparison = '>';
+                $peerComparisonMode = 'relative';
+            } else {
+                $threshold = 70;
+                $comparison = '>=';
+                $peerComparisonMode = 'absolute';
+            }
+
             $rows = DB::select("
                 SELECT
                     u.id,
@@ -58,14 +81,16 @@ class StudentDashboardController extends Controller
                 WHERE u.is_opted_in = 1
                   AND u.id != ?
                 GROUP BY u.id, u.name, un.name, s.name
-                HAVING avg_percentage >= 70
+                HAVING avg_percentage $comparison ?
                 ORDER BY
                     CASE WHEN u.university_id IS NOT NULL AND u.university_id = ? THEN 0 ELSE 1 END,
-                    avg_percentage DESC
+                    avg_percentage DESC,
+                    u.name ASC
                 LIMIT 3
             ", [
                 $suggestedSubject->normalized_name,
                 $user->id,
+                $threshold,
                 $user->university_id,
             ]);
 
@@ -76,6 +101,6 @@ class StudentDashboardController extends Controller
             ]);
         }
 
-        return view('dashboard', compact('subjects', 'university', 'recentSessions', 'recentMarks', 'suggestedSubject', 'recommendedResources', 'peerSuggestions'));
+        return view('dashboard', compact('subjects', 'university', 'recentSessions', 'recentMarks', 'suggestedSubject', 'recommendedResources', 'peerSuggestions', 'peerComparisonMode'));
     }
 }
