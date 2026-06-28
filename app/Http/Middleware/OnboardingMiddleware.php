@@ -13,6 +13,10 @@ class OnboardingMiddleware
     {
         $user = Auth::user();
 
+        if ($user && $user->role === 'admin') {
+            return $next($request);
+        }
+
         if ($user && !$user->hasCompletedOnboarding() && !$request->is('onboarding*')) {
             return redirect()->route('onboarding.step1');
         }

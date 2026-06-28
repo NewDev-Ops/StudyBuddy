@@ -52,4 +52,14 @@ class User extends Authenticatable
     {
         return $this->subjects()->exists() || $this->is_opted_in;
     }
+
+    public function suggestedSubject(): ?Subject
+    {
+        return $this->subjects()
+            ->leftJoin('revision_sessions', 'subjects.id', '=', 'revision_sessions.subject_id')
+            ->selectRaw('subjects.*, MAX(revision_sessions.date) as last_studied_date')
+            ->groupBy('subjects.id', 'subjects.user_id', 'subjects.name', 'subjects.color_code', 'subjects.created_at', 'subjects.updated_at')
+            ->orderByRaw('last_studied_date IS NULL DESC, last_studied_date ASC, subjects.name ASC')
+            ->first();
+    }
 }

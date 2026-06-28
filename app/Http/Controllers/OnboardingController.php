@@ -91,6 +91,10 @@ class OnboardingController extends Controller
             $subject->delete();
         }
 
+        if (Auth::user()->hasCompletedOnboarding()) {
+            return redirect()->route('dashboard');
+        }
+
         return redirect()->route('onboarding.step2');
     }
 
@@ -136,9 +140,12 @@ class OnboardingController extends Controller
         return response()->json($results);
     }
 
-    public function complete()
+    public function complete(Request $request)
     {
-        Auth::user()->update(['is_opted_in' => true]);
+        Auth::user()->update([
+            'is_opted_in' => $request->boolean('is_opted_in'),
+        ]);
+
         return redirect()->route('dashboard');
     }
 

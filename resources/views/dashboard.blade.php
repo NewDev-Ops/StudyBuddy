@@ -23,19 +23,33 @@
                             <h3 class="text-sm font-bold text-gray-900">Study Next</h3>
                         </div>
 
-                        {{-- Recommended Subject --}}
+                        @if($suggestedSubject)
                         <div class="bg-blue-50 rounded-xl p-4 mb-5">
-                            <p class="text-[10px] font-bold text-blue-600 uppercase tracking-wider mb-1">Recommended</p>
-                            <p class="text-sm font-bold text-gray-900 leading-snug">Dummy &amp; Text</p>
-                            <p class="text-xs text-gray-500 mt-1">Focus on Dynamic Programming. Last reviewed 3 days ago.</p>
-                            <button @click="$dispatch('coming-soon')"
-                                class="inline-flex items-center gap-1 text-sm font-semibold text-gray-400 mt-3 hover:text-blue-600 transition">
+                            {{-- Suggested Subject --}}
+                            <div class="flex items-center gap-2 mb-2">
+                                <div class="w-2.5 h-2.5 rounded-full" style="background-color: {{ $suggestedSubject->color_code }}"></div>
+                                <p class="text-sm font-bold text-gray-900">{{ $suggestedSubject->name }}</p>
+                            </div>
+                            @php
+                                $lastStudied = $suggestedSubject->last_studied_date;
+                                $reason = $lastStudied
+                                    ? 'Last studied ' . \Carbon\Carbon::parse($lastStudied)->diffForHumans()
+                                    : "You haven't studied this yet";
+                            @endphp
+                            <p class="text-xs text-gray-500 mt-1">{{ $reason }}</p>
+                            <button onclick="document.getElementById('log-revision-modal').classList.remove('hidden')"
+                                class="inline-flex items-center gap-1 text-sm font-semibold text-blue-600 mt-3 hover:text-blue-700 transition">
                                 Start Session
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                                 </svg>
                             </button>
                         </div>
+                        @else
+                        <div class="bg-gray-50 rounded-xl p-4 mb-5">
+                            <p class="text-xs text-gray-400 text-center">Add a subject to get started</p>
+                        </div>
+                        @endif
 
                         {{-- Quick Resources --}}
                         <div class="mb-5">
@@ -46,24 +60,19 @@
                                 <h4 class="text-xs font-bold text-gray-900 uppercase tracking-wider">Quick Resources</h4>
                             </div>
                             <div class="space-y-2">
-                                <button @click="$dispatch('coming-soon')"
-                                    class="flex items-center gap-3 p-2 rounded-lg w-full text-left hover:bg-gray-50 transition">
-                                    <div class="bg-gray-100 rounded-lg p-1.5">
-                                        <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                @forelse($recommendedResources as $resource)
+                                <a href="{{ $resource->url }}" target="_blank" rel="noopener noreferrer"
+                                    class="flex items-center gap-3 p-2 rounded-lg w-full text-left hover:bg-blue-50 transition group">
+                                    <div class="bg-blue-100 rounded-lg p-1.5">
+                                        <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
                                         </svg>
                                     </div>
-                                    <span class="text-sm text-gray-400">Resource 1</span>
-                                </button>
-                                <button @click="$dispatch('coming-soon')"
-                                    class="flex items-center gap-3 p-2 rounded-lg w-full text-left hover:bg-gray-50 transition">
-                                    <div class="bg-gray-100 rounded-lg p-1.5">
-                                        <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
-                                        </svg>
-                                    </div>
-                                    <span class="text-sm text-gray-400">Resource 2</span>
-                                </button>
+                                    <span class="text-sm text-gray-700 group-hover:text-blue-700 transition font-medium">{{ $resource->title }}</span>
+                                </a>
+                                @empty
+                                <p class="text-xs text-gray-400 text-center py-3">No resources available for this subject yet.</p>
+                                @endforelse
                             </div>
                         </div>
 
@@ -76,22 +85,20 @@
                                 <h4 class="text-xs font-bold text-gray-900 uppercase tracking-wider">Peer Insights</h4>
                             </div>
                             <div class="space-y-3">
-                                <button @click="$dispatch('coming-soon')"
-                                    class="flex items-center gap-3 w-full text-left hover:bg-gray-50 rounded-lg p-1 -ml-1 transition">
-                                    <div class="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center text-xs font-bold text-blue-700">SJ</div>
-                                    <div>
-                                        <p class="text-sm font-medium text-gray-900">Person 1</p>
-                                        <p class="text-xs text-gray-500">{{ $university?->name ?? 'Your University' }}</p>
+                                @forelse($peerSuggestions as $peer)
+                                <div class="flex items-center gap-3 rounded-lg p-1 -ml-1">
+                                    <div class="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center text-xs font-bold text-emerald-700 shrink-0">
+                                        {{ collect(preg_split('/\s+/', $peer->name))->take(2)->map(fn($w) => strtoupper(substr($w, 0, 1)))->join('') }}
                                     </div>
-                                </button>
-                                <button @click="$dispatch('coming-soon')"
-                                    class="flex items-center gap-3 w-full text-left hover:bg-gray-50 rounded-lg p-1 -ml-1 transition">
-                                    <div class="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center text-xs font-bold text-blue-700">MC</div>
-                                    <div>
-                                        <p class="text-sm font-medium text-gray-900">Person 2</p>
-                                        <p class="text-xs text-gray-500">{{ $university?->name ?? 'Your University' }}</p>
+                                    <div class="min-w-0">
+                                        <p class="text-sm font-medium text-gray-900 truncate">{{ $peer->name }}</p>
+                                        <p class="text-xs text-gray-500 truncate">{{ $peer->university_name ?? 'Unknown University' }}</p>
+                                        <p class="text-[10px] text-emerald-600 font-medium mt-0.5">Strong in {{ $peer->subject_name }}</p>
                                     </div>
-                                </button>
+                                </div>
+                                @empty
+                                <p class="text-xs text-gray-400 text-center py-3">No peer matches yet for this subject.</p>
+                                @endforelse
                             </div>
                         </div>
                     </div>
@@ -154,15 +161,13 @@
                                         </div>
                                     </div>
                                 </div>
-                                <form method="POST" action="{{ route('subjects.destroy', $subject) }}" onsubmit="return confirm('Remove this subject?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="text-gray-300 hover:text-red-500 transition p-1">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                                        </svg>
-                                    </button>
-                                </form>
+                                <button type="button"
+                                    onclick="openDeleteModal('{{ $subject->name }}', '{{ route('subjects.destroy', $subject) }}')"
+                                    class="text-gray-300 hover:text-red-500 transition p-1">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                </button>
                             </div>
                         @endforeach
                     @else
@@ -200,8 +205,8 @@
                         </div>
 
                         {{-- Study Wrapped --}}
-                        <button @click="$dispatch('coming-soon')"
-                            class="mt-5 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-100 w-full text-left hover:from-blue-100 hover:to-indigo-100 transition">
+                        <a href="{{ route('study-wrapped') }}"
+                            class="mt-5 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-100 w-full text-left hover:from-blue-100 hover:to-indigo-100 transition group block">
                             <div class="flex items-center gap-3">
                                 <div class="w-10 h-10 rounded-xl bg-blue-400 flex items-center justify-center">
                                     <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -209,15 +214,15 @@
                                     </svg>
                                 </div>
                                 <div>
-                                    <p class="text-sm font-bold text-gray-500">Study Wrapped</p>
-                                    <p class="text-xs text-gray-400">2024</p>
+                                    <p class="text-sm font-bold text-gray-900 group-hover:text-blue-600 transition">Study Wrapped</p>
+                                    <p class="text-xs text-gray-500">{{ now()->year }}</p>
                                 </div>
-                                <svg class="w-4 h-4 text-gray-400 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-4 h-4 text-gray-400 ml-auto group-hover:text-blue-500 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                                 </svg>
                             </div>
-                            <p class="text-xs text-gray-400 mt-2">View semester highlights</p>
-                        </button>
+                            <p class="text-xs text-gray-400 mt-2 group-hover:text-gray-500 transition">View semester highlights</p>
+                        </a>
                     </div>
 
                     {{-- Recent Sessions --}}
@@ -477,6 +482,43 @@
         </div>
     </div>
 
+    {{-- ============================================================ --}}
+    {{-- Delete Subject Confirmation Modal                             --}}
+    {{-- ============================================================ --}}
+    <div id="delete-subject-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/40" onclick="closeDeleteModal()"></div>
+        <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 animate-fade-in-up">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-gray-900">Delete Subject</h3>
+                    <p class="text-sm text-gray-500">This action cannot be undone.</p>
+                </div>
+            </div>
+            <p class="text-sm text-gray-700 mb-6">
+                Are you sure you want to remove <strong id="delete-subject-name"></strong>?
+            </p>
+            <form id="delete-subject-form" method="POST">
+                @csrf
+                @method('DELETE')
+                <div class="flex gap-3">
+                    <button type="button" onclick="closeDeleteModal()"
+                        class="flex-1 border border-gray-300 text-gray-700 font-semibold py-2.5 rounded-lg transition text-sm hover:bg-gray-50">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                        class="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-2.5 rounded-lg transition text-sm">
+                        Delete
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     {{-- Footer --}}
     <div class="py-6 border-t border-gray-200 animate-fade-in" style="animation-delay: 1000ms">
         <p class="text-center text-xs text-gray-400">&copy; 2026 Revisor Academic Tracking. All rights reserved.</p>
@@ -495,6 +537,15 @@
     @endif
 
     <script>
+        function openDeleteModal(name, url) {
+            document.getElementById('delete-subject-name').textContent = name;
+            document.getElementById('delete-subject-form').action = url;
+            document.getElementById('delete-subject-modal').classList.remove('hidden');
+        }
+        function closeDeleteModal() {
+            document.getElementById('delete-subject-modal').classList.add('hidden');
+        }
+
         function subjectSearch() {
             return {
                 query: '',

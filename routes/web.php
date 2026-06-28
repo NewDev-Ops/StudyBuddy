@@ -25,7 +25,7 @@ Route::middleware(['auth', 'onboarding'])->prefix('onboarding')->name('onboardin
     Route::post('/step2/subject', [OnboardingController::class, 'storeSubject'])->name('storeSubject');
     Route::post('/step2/suggested', [OnboardingController::class, 'addSuggestedSubject'])->name('addSuggested');
     Route::delete('/step2/subject/{subject}', [OnboardingController::class, 'deleteSubject'])->name('deleteSubject');
-    Route::get('/complete', [OnboardingController::class, 'complete'])->name('complete');
+    Route::post('/complete', [OnboardingController::class, 'complete'])->name('complete');
 });
 
 // Student routes
@@ -41,6 +41,8 @@ Route::middleware(['auth', 'onboarding'])->group(function () {
     Route::post('/marks', [MarkController::class, 'store'])->name('marks.store');
     Route::delete('/marks/{mark}', [MarkController::class, 'destroy'])->name('marks.destroy');
 
+    Route::get('/study-wrapped', [\App\Http\Controllers\StudyWrappedController::class, 'index'])->name('study-wrapped');
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -49,8 +51,21 @@ Route::middleware(['auth', 'onboarding'])->group(function () {
 Route::middleware(['auth'])->get('/subjects/search', [OnboardingController::class, 'search'])->name('subjects.search');
 
 // Admin routes
-Route::middleware(['auth', 'onboarding', \App\Http\Middleware\AdminMiddleware::class])->prefix('admin')->group(function () {
-    Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
+Route::middleware(['auth', 'onboarding', \App\Http\Middleware\AdminMiddleware::class])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+
+    Route::get('/universities', [\App\Http\Controllers\AdminUniversityController::class, 'index'])->name('universities');
+    Route::post('/universities', [\App\Http\Controllers\AdminUniversityController::class, 'store'])->name('universities.store');
+    Route::patch('/universities/{university}', [\App\Http\Controllers\AdminUniversityController::class, 'update'])->name('universities.update');
+    Route::delete('/universities/{university}', [\App\Http\Controllers\AdminUniversityController::class, 'destroy'])->name('universities.destroy');
+
+    Route::get('/resources', [\App\Http\Controllers\AdminResourceController::class, 'index'])->name('resources');
+    Route::post('/resources', [\App\Http\Controllers\AdminResourceController::class, 'store'])->name('resources.store');
+    Route::patch('/resources/{resource}', [\App\Http\Controllers\AdminResourceController::class, 'update'])->name('resources.update');
+    Route::delete('/resources/{resource}', [\App\Http\Controllers\AdminResourceController::class, 'destroy'])->name('resources.destroy');
+
+    Route::get('/peer-network', [\App\Http\Controllers\AdminPeerNetworkController::class, 'index'])->name('peer-network');
+    Route::patch('/peer-network/{user}/remove', [\App\Http\Controllers\AdminPeerNetworkController::class, 'remove'])->name('peer-network.remove');
 });
 
 require __DIR__.'/auth.php';
