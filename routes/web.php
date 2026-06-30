@@ -32,6 +32,9 @@ Route::middleware(['auth', 'onboarding'])->prefix('onboarding')->name('onboardin
 Route::middleware(['auth', 'onboarding'])->group(function () {
     Route::get('/dashboard', [StudentDashboardController::class, 'index'])->name('dashboard');
 
+    Route::get('/feedback', [\App\Http\Controllers\FeedbackController::class, 'create'])->name('feedback.create');
+    Route::post('/feedback', [\App\Http\Controllers\FeedbackController::class, 'store'])->name('feedback.store');
+
     Route::post('/subjects', [OnboardingController::class, 'storeDashboardSubject'])->name('subjects.store');
     Route::delete('/subjects/{subject}', [OnboardingController::class, 'deleteSubject'])->name('subjects.destroy');
 
@@ -47,6 +50,8 @@ Route::middleware(['auth', 'onboarding'])->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::patch('/profile/peer-network', [ProfileController::class, 'togglePeerNetwork'])->name('profile.peer-network.toggle');
+
+    Route::post('/peer-network/connect/{targetUserId}', [\App\Http\Controllers\PeerConnectionController::class, 'sendRequest'])->name('peer-network.connect');
 });
 
 Route::middleware(['auth'])->get('/subjects/search', [OnboardingController::class, 'search'])->name('subjects.search');
@@ -71,6 +76,9 @@ Route::middleware(['auth', 'onboarding', \App\Http\Middleware\AdminMiddleware::c
     Route::get('/users', [\App\Http\Controllers\AdminUserController::class, 'index'])->name('users');
     Route::post('/users/{user}/promote', [\App\Http\Controllers\AdminUserController::class, 'promote'])->name('users.promote');
     Route::post('/users/{user}/demote', [\App\Http\Controllers\AdminUserController::class, 'demote'])->name('users.demote');
+
+    Route::get('/feedback', [\App\Http\Controllers\FeedbackController::class, 'adminIndex'])->name('feedback');
+    Route::post('/feedback/{feedback}/mark-read', [\App\Http\Controllers\FeedbackController::class, 'markRead'])->name('feedback.mark-read');
 });
 
 require __DIR__.'/auth.php';

@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ConnectRequest;
 use App\Models\Mark;
 use App\Models\Resource;
 use App\Models\RevisionSession;
+use App\Services\PeerService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -44,28 +46,13 @@ class StudentDashboardController extends Controller
 
         $peerSuggestions = collect();
         $peerComparisonMode = null;
+        $recentConnectIds = collect();
         if ($suggestedSubject && $suggestedSubject->normalized_name) {
-            $studentAvg = DB::selectOne("
-                SELECT ROUND(AVG(m.score * 100.0 / m.max_score), 1) AS avg_percentage
-                FROM marks m
-                INNER JOIN subjects s ON s.id = m.subject_id AND s.normalized_name = ?
-                WHERE s.user_id = ?
-            ", [
-                $suggestedSubject->normalized_name,
-                $user->id,
-            ]);
-
-            $studentHasMark = $studentAvg && $studentAvg->avg_percentage !== null;
-
-            if ($studentHasMark) {
-                $threshold = $studentAvg->avg_percentage;
-                $comparison = '>';
-                $peerComparisonMode = 'relative';
-            } else {
-                $threshold = 70;
-                $comparison = '>=';
-                $peerComparisonMode = 'absolute';
-            }
+            $peerService = app(PeerService::class);
+            $thresholds = $peerService->resolveThresholds($user, $suggestedSubject->normalized_name);
+            $threshold = $thresholds['threshold'];
+            $comparison = $thresholds['comparison'];
+            $peerComparisonMode = $thresholds['mode'];
 
             $rows = DB::select("
                 SELECT
@@ -94,13 +81,21 @@ class StudentDashboardController extends Controller
                 $user->university_id,
             ]);
 
+            $peerIds = collect($rows)->pluck('id');
+
+            $recentConnectIds = ConnectRequest::where('sender_id', $user->id)
+                ->whereIn('receiver_id', $peerIds)
+                ->where('created_at', '>', now()->subDay())
+                ->pluck('receiver_id');
+
             $peerSuggestions = collect($rows)->map(fn ($r) => (object) [
+                'id' => $r->id,
                 'name' => $r->student_name,
                 'university_name' => $r->university_name,
                 'subject_name' => $r->subject_name,
             ]);
         }
 
-        return view('dashboard', compact('subjects', 'university', 'recentSessions', 'recentMarks', 'suggestedSubject', 'recommendedResources', 'peerSuggestions', 'peerComparisonMode'));
+        return view('dashboard', compact('subjects', 'university', 'recentSessions', 'recentMarks', 'suggestedSubject', 'recommendedResources', 'peerSuggestions', 'peerComparisonMode', 'recentConnectIds'));
     }
 }

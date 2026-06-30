@@ -19,8 +19,16 @@
             </div>
             <span class="font-bold text-gray-900">Revisor</span>
             <span class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium ml-1">Admin</span>
+            <span class="hidden sm:inline text-xs text-gray-400 ml-2">Built by students for students</span>
         </div>
         <div class="flex items-center gap-4">
+            <a href="{{ route('admin.feedback') }}" class="text-sm text-gray-600 hover:text-gray-900 relative">
+                Feedback
+                @php $unreadCount = \App\Models\Feedback::where('is_read', false)->count(); @endphp
+                @if($unreadCount > 0)
+                    <span class="absolute -top-2 -right-4 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center leading-tight">{{ $unreadCount }}</span>
+                @endif
+            </a>
             <span class="text-sm text-gray-600">{{ auth()->user()->name }}</span>
             <form method="POST" action="{{ route('logout') }}">
                 @csrf

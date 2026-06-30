@@ -19,6 +19,7 @@
                     </svg>
                 </div>
                 <span class="font-bold text-lg">Revisor</span>
+                <span class="hidden sm:inline text-xs text-gray-400 ml-2">Built by students for students</span>
             </div>
             <div>
                 @auth
@@ -237,7 +238,7 @@
                 </div>
                 <span class="font-bold text-white">Revisor</span>
             </div>
-            <p class="text-sm text-center">Helping university students master their revision.</p>
+            <p class="text-sm text-center">Built by students for students</p>
             <div class="flex gap-4 text-xs uppercase tracking-wide">
                 <a href="#" class="hover:text-white">Support</a>
                 <a href="#" class="hover:text-white">Academic Integrity</a>
