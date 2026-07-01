@@ -16,6 +16,15 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('messages.index')" :active="request()->routeIs('messages.*')">
+                        <span class="flex items-center gap-1.5">
+                            {{ __('Messages') }}
+                            @php $msgCount = \App\Models\Message::where('receiver_id', Auth::id())->whereNull('read_at')->count(); @endphp
+                            @if($msgCount > 0)
+                                <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-white text-[10px] font-bold">{{ $msgCount > 99 ? '99+' : $msgCount }}</span>
+                            @endif
+                        </span>
+                    </x-nav-link>
                 </div>
             </div>
 
@@ -70,6 +79,15 @@
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('messages.index')" :active="request()->routeIs('messages.*')">
+                <span class="flex items-center gap-1.5">
+                    {{ __('Messages') }}
+                    @php $msgCount = \App\Models\Message::where('receiver_id', Auth::id())->whereNull('read_at')->count(); @endphp
+                    @if($msgCount > 0)
+                        <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-white text-[10px] font-bold">{{ $msgCount > 99 ? '99+' : $msgCount }}</span>
+                    @endif
+                </span>
             </x-responsive-nav-link>
         </div>
 

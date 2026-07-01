@@ -91,7 +91,6 @@
                             </div>
                             <div class="space-y-3">
                                 @forelse($peerSuggestions as $peer)
-                                @php $alreadySent = $recentConnectIds->contains($peer->id); @endphp
                                 <div class="rounded-lg p-1 -ml-1">
                                     <div class="flex items-center gap-3">
                                         <div class="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center text-xs font-bold text-emerald-700 shrink-0">
@@ -104,14 +103,10 @@
                                         </div>
                                     </div>
                                     <div class="mt-1.5 ml-12">
-                                        @if($alreadySent)
-                                            <span class="text-[11px] text-gray-400 font-medium">Request Sent</span>
-                                        @else
-                                            <button type="button" onclick='openConnectModal(@json($peer))'
-                                                class="text-[11px] text-blue-600 hover:text-blue-800 font-semibold">
-                                                + Connect
-                                            </button>
-                                        @endif
+                                        <a href="{{ route('messages.show', $peer->id) }}"
+                                           class="text-[11px] text-blue-600 hover:text-blue-800 font-semibold">
+                                            Send Message
+                                        </a>
                                     </div>
                                 </div>
                                 @empty
@@ -544,54 +539,6 @@
         </div>
     </div>
 
-    {{-- ===== CONNECT MODAL ===== --}}
-    <div id="connect-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/40" onclick="closeConnectModal()"></div>
-        <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 animate-fade-in-up">
-            <div class="flex items-center gap-3 mb-4">
-                <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
-                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                    </svg>
-                </div>
-                <div>
-                    <h3 class="text-lg font-bold text-gray-900" id="connect-modal-title">Connect with <span id="connect-peer-name"></span></h3>
-                    <p class="text-sm text-gray-500">They'll receive an email from you.</p>
-                </div>
-            </div>
-            <p class="text-sm text-gray-700 mb-4">
-                An email will be sent to <span id="connect-peer-name-2"></span> on your behalf. Your email address will be included as the reply-to so they can respond directly.
-            </p>
-            <form id="connect-form" method="POST">
-                @csrf
-                <div class="mb-4">
-                    <label for="connect-note" class="block text-sm font-medium text-gray-700 mb-1">Add a note <span class="text-gray-400 font-normal">(optional, max 200 characters)</span></label>
-                    <textarea name="note" id="connect-note" rows="3" maxlength="200"
-                        placeholder="Hi, I saw we're both studying this subject..."
-                        class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition resize-none"></textarea>
-                    <p class="text-xs text-gray-400 mt-1 text-right"><span id="connect-note-count">0</span>/200</p>
-                </div>
-                <div id="connect-error" class="hidden bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-lg text-sm mb-4"></div>
-                <div class="flex gap-3">
-                    <button type="button" onclick="closeConnectModal()"
-                        class="flex-1 border border-gray-300 text-gray-700 font-semibold py-2.5 rounded-lg transition text-sm hover:bg-gray-50">
-                        Cancel
-                    </button>
-                    <button type="submit" id="connect-submit-btn"
-                        class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg transition text-sm">
-                        Send Request
-                    </button>
-                </div>
-            </form>
-            <div id="connect-success" class="hidden bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-lg text-sm flex items-center gap-2">
-                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                Connect request sent!
-            </div>
-        </div>
-    </div>
-
     {{-- Footer --}}
     <div class="py-6 border-t border-gray-200 animate-fade-in" style="animation-delay: 1000ms">
         <p class="text-center text-xs text-gray-400">&copy; 2026 Revisor Academic Tracking. Built by students for students. All rights reserved.</p>
@@ -618,78 +565,6 @@
         function closeDeleteModal() {
             document.getElementById('delete-subject-modal').classList.add('hidden');
         }
-
-        let connectPeerId = null;
-
-        function openConnectModal(peer) {
-            connectPeerId = peer.id;
-            document.getElementById('connect-peer-name').textContent = peer.name;
-            document.getElementById('connect-peer-name-2').textContent = peer.name;
-            document.getElementById('connect-modal-title').textContent = 'Connect with ' + peer.name;
-            document.getElementById('connect-note').value = '';
-            document.getElementById('connect-note-count').textContent = '0';
-            document.getElementById('connect-error').classList.add('hidden');
-            document.getElementById('connect-success').classList.add('hidden');
-            document.getElementById('connect-form').classList.remove('hidden');
-            document.getElementById('connect-submit-btn').disabled = false;
-            document.getElementById('connect-modal').classList.remove('hidden');
-        }
-
-        function closeConnectModal() {
-            document.getElementById('connect-modal').classList.add('hidden');
-            connectPeerId = null;
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const noteInput = document.getElementById('connect-note');
-            if (noteInput) {
-                noteInput.addEventListener('input', function() {
-                    document.getElementById('connect-note-count').textContent = this.value.length;
-                });
-            }
-
-            const connectForm = document.getElementById('connect-form');
-            if (connectForm) {
-                connectForm.addEventListener('submit', async function(e) {
-                    e.preventDefault();
-                    const btn = document.getElementById('connect-submit-btn');
-                    const errorDiv = document.getElementById('connect-error');
-                    btn.disabled = true;
-                    btn.textContent = 'Sending...';
-
-                    try {
-                        const response = await fetch('/peer-network/connect/' + connectPeerId, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Accept': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                                'X-Requested-With': 'XMLHttpRequest',
-                            },
-                            body: JSON.stringify({ note: document.getElementById('connect-note').value }),
-                        });
-
-                        const data = await response.json();
-
-                        if (response.ok && data.success) {
-                            document.getElementById('connect-form').classList.add('hidden');
-                            document.getElementById('connect-success').classList.remove('hidden');
-                            setTimeout(closeConnectModal, 2500);
-                        } else {
-                            errorDiv.textContent = data.error || 'Something went wrong.';
-                            errorDiv.classList.remove('hidden');
-                            btn.disabled = false;
-                            btn.textContent = 'Send Request';
-                        }
-                    } catch (err) {
-                        errorDiv.textContent = 'Network error. Please try again.';
-                        errorDiv.classList.remove('hidden');
-                        btn.disabled = false;
-                        btn.textContent = 'Send Request';
-                    }
-                });
-            }
-        });
 
         function subjectSearch() {
             return {

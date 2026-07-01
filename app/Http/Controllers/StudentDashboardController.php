@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ConnectRequest;
 use App\Models\Mark;
 use App\Models\Resource;
 use App\Models\RevisionSession;
@@ -46,7 +45,6 @@ class StudentDashboardController extends Controller
 
         $peerSuggestions = collect();
         $peerComparisonMode = null;
-        $recentConnectIds = collect();
         if ($suggestedSubject && $suggestedSubject->normalized_name) {
             $peerService = app(PeerService::class);
             $thresholds = $peerService->resolveThresholds($user, $suggestedSubject->normalized_name);
@@ -81,13 +79,6 @@ class StudentDashboardController extends Controller
                 $user->university_id,
             ]);
 
-            $peerIds = collect($rows)->pluck('id');
-
-            $recentConnectIds = ConnectRequest::where('sender_id', $user->id)
-                ->whereIn('receiver_id', $peerIds)
-                ->where('created_at', '>', now()->subDay())
-                ->pluck('receiver_id');
-
             $peerSuggestions = collect($rows)->map(fn ($r) => (object) [
                 'id' => $r->id,
                 'name' => $r->student_name,
@@ -96,6 +87,6 @@ class StudentDashboardController extends Controller
             ]);
         }
 
-        return view('dashboard', compact('subjects', 'university', 'recentSessions', 'recentMarks', 'suggestedSubject', 'recommendedResources', 'peerSuggestions', 'peerComparisonMode', 'recentConnectIds'));
+        return view('dashboard', compact('subjects', 'university', 'recentSessions', 'recentMarks', 'suggestedSubject', 'recommendedResources', 'peerSuggestions', 'peerComparisonMode'));
     }
 }
