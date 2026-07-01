@@ -61,4 +61,15 @@ class ProfileController extends Controller
 
         return Redirect::route('profile.edit')->with('status', 'peer-network-updated');
     }
+
+    public function updateUniversity(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'university_id' => 'nullable|exists:universities,id',
+        ]);
+
+        $request->user()->update($validated);
+
+        return Redirect::route('profile.edit')->with('status', 'university-updated');
+    }
 }

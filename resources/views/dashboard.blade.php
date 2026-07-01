@@ -5,7 +5,7 @@
         </h2>
     </x-slot>
 
-    <div class="py-8">
+    <div class="py-8" x-data="{ showConfirm: false, confirmAction: '', confirmLabel: '' }">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
@@ -90,28 +90,35 @@
                                 @endif
                             </div>
                             <div class="space-y-3">
-                                @forelse($peerSuggestions as $peer)
-                                <div class="rounded-lg p-1 -ml-1">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center text-xs font-bold text-emerald-700 shrink-0">
-                                            {{ collect(preg_split('/\s+/', $peer->name))->take(2)->map(fn($w) => strtoupper(substr($w, 0, 1)))->join('') }}
+                                @if($peerSuggestions === null)
+                                    <p class="text-xs text-gray-400 text-center py-3">
+                                        Join the peer network to see study partner suggestions.
+                                        <a href="{{ route('profile.edit') }}" class="text-blue-600 hover:text-blue-800 font-semibold block mt-1">Go to Profile Settings</a>
+                                    </p>
+                                @elseif($peerSuggestions->isEmpty())
+                                    <p class="text-xs text-gray-400 text-center py-3">No peer matches yet for this subject.</p>
+                                @else
+                                    @foreach($peerSuggestions as $peer)
+                                    <div class="rounded-lg p-1 -ml-1">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center text-xs font-bold text-emerald-700 shrink-0">
+                                                {{ collect(preg_split('/\s+/', $peer->name))->take(2)->map(fn($w) => strtoupper(substr($w, 0, 1)))->join('') }}
+                                            </div>
+                                            <div class="min-w-0 flex-1">
+                                                <p class="text-sm font-medium text-gray-900 truncate">{{ $peer->name }}</p>
+                                                <p class="text-xs text-gray-500 truncate">{{ $peer->university_name ?? 'Unknown University' }}</p>
+                                                <p class="text-[10px] text-emerald-600 font-medium mt-0.5">Strong in {{ $peer->subject_name }}</p>
+                                            </div>
                                         </div>
-                                        <div class="min-w-0 flex-1">
-                                            <p class="text-sm font-medium text-gray-900 truncate">{{ $peer->name }}</p>
-                                            <p class="text-xs text-gray-500 truncate">{{ $peer->university_name ?? 'Unknown University' }}</p>
-                                            <p class="text-[10px] text-emerald-600 font-medium mt-0.5">Strong in {{ $peer->subject_name }}</p>
+                                        <div class="mt-1.5 ml-12">
+                                            <a href="{{ route('messages.show', $peer->id) }}"
+                                               class="text-[11px] text-blue-600 hover:text-blue-800 font-semibold">
+                                                Send Message
+                                            </a>
                                         </div>
                                     </div>
-                                    <div class="mt-1.5 ml-12">
-                                        <a href="{{ route('messages.show', $peer->id) }}"
-                                           class="text-[11px] text-blue-600 hover:text-blue-800 font-semibold">
-                                            Send Message
-                                        </a>
-                                    </div>
-                                </div>
-                                @empty
-                                <p class="text-xs text-gray-400 text-center py-3">No peer matches yet for this subject.</p>
-                                @endforelse
+                                    @endforeach
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -259,10 +266,10 @@
                                                 <p class="text-xs text-gray-500">{{ $session->duration_minutes }}m &middot; {{ $session->date->format('M d') }}</p>
                                             </div>
                                         </div>
-                                        <form method="POST" action="{{ route('revision-sessions.destroy', $session) }}" onsubmit="return confirm('Delete this session?')">
+                                        <form method="POST" action="{{ route('revision-sessions.destroy', $session) }}">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="text-gray-300 hover:text-red-500 transition opacity-0 group-hover:opacity-100 p-1">
+                                            <button type="button" @click.prevent="confirmAction = '{{ route('revision-sessions.destroy', $session) }}'; confirmLabel = 'this session'; showConfirm = true" class="text-gray-300 hover:text-red-500 transition opacity-0 group-hover:opacity-100 p-1">
                                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                                                 </svg>
@@ -294,10 +301,10 @@
                                             <span class="text-xs font-bold {{ $mark->percentage() >= 70 ? 'text-emerald-600' : ($mark->percentage() >= 50 ? 'text-amber-600' : 'text-red-500') }}">
                                                 {{ $mark->percentage() }}%
                                             </span>
-                                            <form method="POST" action="{{ route('marks.destroy', $mark) }}" onsubmit="return confirm('Delete this mark?')">
+                                            <form method="POST" action="{{ route('marks.destroy', $mark) }}">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="text-gray-300 hover:text-red-500 transition opacity-0 group-hover:opacity-100 p-1">
+                                                <button type="button" @click.prevent="confirmAction = '{{ route('marks.destroy', $mark) }}'; confirmLabel = 'this mark'; showConfirm = true" class="text-gray-300 hover:text-red-500 transition opacity-0 group-hover:opacity-100 p-1">
                                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                                                     </svg>
@@ -527,6 +534,43 @@
                 @method('DELETE')
                 <div class="flex gap-3">
                     <button type="button" onclick="closeDeleteModal()"
+                        class="flex-1 border border-gray-300 text-gray-700 font-semibold py-2.5 rounded-lg transition text-sm hover:bg-gray-50">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                        class="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-2.5 rounded-lg transition text-sm">
+                        Delete
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {{-- ============================================================ --}}
+    {{-- Confirm Delete Modal                                          --}}
+    {{-- ============================================================ --}}
+    <div x-show="showConfirm" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/40" @click="showConfirm = false"></div>
+        <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 animate-fade-in-up">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-gray-900">Confirm Delete</h3>
+                    <p class="text-sm text-gray-500">This action cannot be undone.</p>
+                </div>
+            </div>
+            <p class="text-sm text-gray-700 mb-6">
+                Are you sure you want to delete <strong x-text="confirmLabel"></strong>?
+            </p>
+            <form method="POST" x-bind:action="confirmAction">
+                @csrf
+                @method('DELETE')
+                <div class="flex gap-3">
+                    <button type="button" @click="showConfirm = false"
                         class="flex-1 border border-gray-300 text-gray-700 font-semibold py-2.5 rounded-lg transition text-sm hover:bg-gray-50">
                         Cancel
                     </button>

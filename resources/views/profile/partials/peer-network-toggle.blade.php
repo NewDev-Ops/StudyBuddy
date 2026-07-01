@@ -28,15 +28,45 @@
                 </button>
             </form>
         @else
-            <form method="POST" action="{{ route('profile.peer-network.toggle') }}">
-                @csrf
-                @method('PATCH')
-                <button type="submit"
-                    class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg text-sm transition"
-                    onclick="return confirm('When visible, only your name, university, and strong subjects are shown. Your marks stay private. You can leave anytime.')">
+            <div x-data="{ showConfirm: false }">
+                <button type="button" @click="showConfirm = true"
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg text-sm transition">
                     Join peer network
                 </button>
-            </form>
+                <div x-show="showConfirm" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div class="absolute inset-0 bg-black/40" @click="showConfirm = false"></div>
+                    <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 animate-fade-in-up">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+                                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-900">Join Peer Network</h3>
+                                <p class="text-sm text-gray-500">Become visible as a study partner</p>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-700 mb-6">
+                            When visible, only your name, university, and strong subjects are shown. Your marks stay private. You can leave anytime.
+                        </p>
+                        <div class="flex gap-3">
+                            <button type="button" @click="showConfirm = false"
+                                class="flex-1 border border-gray-300 text-gray-700 font-semibold py-2.5 rounded-lg transition text-sm hover:bg-gray-50">
+                                Cancel
+                            </button>
+                            <form method="POST" action="{{ route('profile.peer-network.toggle') }}">
+                                @csrf
+                                @method('PATCH')
+                                <button type="submit"
+                                    class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg transition text-sm">
+                                    Join
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
         @endif
     </div>
 </section>

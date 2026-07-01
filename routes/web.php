@@ -50,6 +50,7 @@ Route::middleware(['auth', 'onboarding'])->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::patch('/profile/peer-network', [ProfileController::class, 'togglePeerNetwork'])->name('profile.peer-network.toggle');
+    Route::patch('/profile/university', [ProfileController::class, 'updateUniversity'])->name('profile.university.update');
 
     Route::get('/messages', [\App\Http\Controllers\MessageController::class, 'index'])->name('messages.index');
     Route::get('/messages/{user}', [\App\Http\Controllers\MessageController::class, 'show'])->name('messages.show');

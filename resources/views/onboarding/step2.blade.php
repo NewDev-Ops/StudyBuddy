@@ -9,7 +9,8 @@
 </head>
 <body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center py-12 px-4">
 
-    <div class="bg-white rounded-2xl shadow-md w-full max-w-md px-8 py-10 animate-fade-in-up">
+    <div class="bg-white rounded-2xl shadow-md w-full max-w-md px-8 py-10 animate-fade-in-up"
+         x-data="{ showConfirm: false, confirmAction: '', confirmSubject: '' }">
 
         {{-- Progress --}}
         <div class="flex items-center gap-2 mb-8">
@@ -94,10 +95,10 @@
                                 <div class="w-3 h-3 rounded-full" style="background-color: {{ $subject->color_code }}"></div>
                                 <span class="text-sm text-gray-700">{{ $subject->name }}</span>
                             </div>
-                            <form method="POST" action="{{ route('onboarding.deleteSubject', $subject) }}" onsubmit="return confirm('Remove this subject?')">
+                            <form method="POST" action="{{ route('onboarding.deleteSubject', $subject) }}">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="text-gray-400 hover:text-red-500 transition">
+                                <button type="button" @click.prevent="confirmAction = '{{ route('onboarding.deleteSubject', $subject) }}'; confirmSubject = '{{ $subject->name }}'; showConfirm = true" class="text-gray-400 hover:text-red-500 transition">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                                     </svg>
@@ -129,6 +130,41 @@
                     class="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg transition text-sm">
                     {{ $userSubjects->isNotEmpty() ? 'Finish Setup' : 'Skip for now' }}
                 </button>
+            </form>
+        </div>
+    </div>
+
+    {{-- Confirm Delete Modal --}}
+    <div x-show="showConfirm" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/40" @click="showConfirm = false"></div>
+        <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 animate-fade-in-up">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-gray-900">Remove Subject</h3>
+                    <p class="text-sm text-gray-500">This will only remove it from your list.</p>
+                </div>
+            </div>
+            <p class="text-sm text-gray-700 mb-6">
+                Are you sure you want to remove <strong x-text="confirmSubject"></strong>?
+            </p>
+            <form method="POST" x-bind:action="confirmAction">
+                @csrf
+                @method('DELETE')
+                <div class="flex gap-3">
+                    <button type="button" @click="showConfirm = false"
+                        class="flex-1 border border-gray-300 text-gray-700 font-semibold py-2.5 rounded-lg transition text-sm hover:bg-gray-50">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                        class="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-2.5 rounded-lg transition text-sm">
+                        Remove
+                    </button>
+                </div>
             </form>
         </div>
     </div>

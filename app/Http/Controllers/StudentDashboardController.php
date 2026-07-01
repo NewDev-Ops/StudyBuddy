@@ -43,9 +43,9 @@ class StudentDashboardController extends Controller
                 : $matches;
         }
 
-        $peerSuggestions = collect();
+        $peerSuggestions = null;
         $peerComparisonMode = null;
-        if ($suggestedSubject && $suggestedSubject->normalized_name) {
+        if ($user->is_opted_in && $suggestedSubject && $suggestedSubject->normalized_name) {
             $peerService = app(PeerService::class);
             $thresholds = $peerService->resolveThresholds($user, $suggestedSubject->normalized_name);
             $threshold = $thresholds['threshold'];
