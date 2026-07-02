@@ -55,6 +55,8 @@ Route::middleware(['auth', 'onboarding'])->group(function () {
     Route::get('/messages', [\App\Http\Controllers\MessageController::class, 'index'])->name('messages.index');
     Route::get('/messages/{user}', [\App\Http\Controllers\MessageController::class, 'show'])->name('messages.show');
     Route::post('/messages/{user}', [\App\Http\Controllers\MessageController::class, 'store'])->name('messages.store');
+
+    Route::get('/report/student', [\App\Http\Controllers\ReportController::class, 'student'])->name('report.student');
 });
 
 Route::middleware(['auth'])->get('/subjects/search', [OnboardingController::class, 'search'])->name('subjects.search');
@@ -82,6 +84,10 @@ Route::middleware(['auth', 'onboarding', \App\Http\Middleware\AdminMiddleware::c
 
     Route::get('/feedback', [\App\Http\Controllers\FeedbackController::class, 'adminIndex'])->name('feedback');
     Route::post('/feedback/{feedback}/mark-read', [\App\Http\Controllers\FeedbackController::class, 'markRead'])->name('feedback.mark-read');
+
+    Route::get('/reports/overview', [\App\Http\Controllers\ReportController::class, 'overview'])->name('reports.overview');
+    Route::get('/reports/students', [\App\Http\Controllers\ReportController::class, 'students'])->name('reports.students');
+    Route::get('/reports/feedback', [\App\Http\Controllers\ReportController::class, 'feedback'])->name('reports.feedback');
 });
 
 require __DIR__.'/auth.php';

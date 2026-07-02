@@ -20,10 +20,23 @@ class GoogleAuthController extends Controller
             $email = $verifiedToken->claims()->get('email');
             $name = $verifiedToken->claims()->get('name');
 
-            $user = User::updateOrCreate(
-                ['google_id' => $uid],
-                ['name' => $name, 'email' => $email]
-            );
+            $user = User::where('google_id', $uid)->first();
+
+            if ($user) {
+                $user->update(['name' => $name, 'email' => $email]);
+            } else {
+                $user = User::where('email', $email)->first();
+
+                if ($user) {
+                    $user->update(['google_id' => $uid, 'name' => $name]);
+                } else {
+                    $user = User::create([
+                        'google_id' => $uid,
+                        'name'      => $name,
+                        'email'     => $email,
+                    ]);
+                }
+            }
 
             Auth::login($user);
 

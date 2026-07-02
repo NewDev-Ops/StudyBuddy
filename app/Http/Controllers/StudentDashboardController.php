@@ -34,6 +34,7 @@ class StudentDashboardController extends Controller
             ->get();
 
         $suggestedSubject = $user->suggestedSubject();
+        $suggestionBreakdown = $user->suggestionBreakdown;
 
         $recommendedResources = collect();
         if ($suggestedSubject && $suggestedSubject->normalized_name) {
@@ -87,6 +88,6 @@ class StudentDashboardController extends Controller
             ]);
         }
 
-        return view('dashboard', compact('subjects', 'university', 'recentSessions', 'recentMarks', 'suggestedSubject', 'recommendedResources', 'peerSuggestions', 'peerComparisonMode'));
+        return view('dashboard', compact('subjects', 'university', 'recentSessions', 'recentMarks', 'suggestedSubject', 'suggestionBreakdown', 'recommendedResources', 'peerSuggestions', 'peerComparisonMode'));
     }
 }

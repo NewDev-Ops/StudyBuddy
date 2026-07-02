@@ -31,10 +31,19 @@
                                 <p class="text-sm font-bold text-gray-900">{{ $suggestedSubject->name }}</p>
                             </div>
                             @php
-                                $lastStudied = $suggestedSubject->last_studied_date;
-                                $reason = $lastStudied
-                                    ? 'Last studied ' . \Carbon\Carbon::parse($lastStudied)->diffForHumans()
-                                    : "You haven't studied this yet";
+                                $bd = $suggestionBreakdown;
+                                if ($bd['mode'] === 'composite') {
+                                    $parts = [];
+                                    if ($bd['weighted_avg_percent'] !== null) {
+                                        $parts[] = $bd['weighted_avg_percent'] . '% average';
+                                    }
+                                    $parts[] = 'Only ' . $bd['total_minutes'] . ' min logged';
+                                    $reason = implode(' • ', $parts);
+                                } elseif ($bd['total_minutes'] === 0) {
+                                    $reason = "You haven't studied this subject yet";
+                                } else {
+                                    $reason = 'No marks yet • Only ' . $bd['total_minutes'] . ' min logged';
+                                }
                             @endphp
                             <p class="text-xs text-gray-500 mt-1">{{ $reason }}</p>
                             <button onclick="document.getElementById('log-revision-modal').classList.remove('hidden')"

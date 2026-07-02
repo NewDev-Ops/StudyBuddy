@@ -136,6 +136,40 @@
                 <p class="text-xs text-gray-400">Moderate peer network visibility.</p>
             </a>
         </div>
+
+        <h2 class="text-lg font-bold text-gray-900 mt-10 mb-4">Reports</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <a href="{{ route('admin.reports.overview') }}"
+                class="bg-white rounded-xl shadow-sm p-5 hover:shadow-md transition border border-gray-100 group text-center">
+                <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center mx-auto mb-3">
+                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                    </svg>
+                </div>
+                <h3 class="font-bold text-gray-900 group-hover:text-blue-600 transition text-sm">Platform Overview</h3>
+                <p class="text-xs text-gray-400 mt-1">Users, activity, subjects, resources</p>
+            </a>
+            <a href="{{ route('admin.reports.students') }}"
+                class="bg-white rounded-xl shadow-sm p-5 hover:shadow-md transition border border-gray-100 group text-center">
+                <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center mx-auto mb-3">
+                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
+                    </svg>
+                </div>
+                <h3 class="font-bold text-gray-900 group-hover:text-blue-600 transition text-sm">Student Activity</h3>
+                <p class="text-xs text-gray-400 mt-1">Per-student breakdown</p>
+            </a>
+            <a href="{{ route('admin.reports.feedback') }}"
+                class="bg-white rounded-xl shadow-sm p-5 hover:shadow-md transition border border-gray-100 group text-center">
+                <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center mx-auto mb-3">
+                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/>
+                    </svg>
+                </div>
+                <h3 class="font-bold text-gray-900 group-hover:text-blue-600 transition text-sm">Feedback Report</h3>
+                <p class="text-xs text-gray-400 mt-1">All feedback submissions</p>
+            </a>
+        </div>
     </div>
 </body>
 </html>
