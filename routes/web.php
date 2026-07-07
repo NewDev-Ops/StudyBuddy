@@ -17,11 +17,19 @@ Route::get('/', function () {
 // Google Auth
 Route::post('/auth/google', [GoogleAuthController::class, 'handleGoogleToken']);
 
-// Onboarding routes
+// Onboarding GET routes — read-only, use onboarding middleware to redirect
+// completed users away from the form pages.
 Route::middleware(['auth', 'onboarding'])->prefix('onboarding')->name('onboarding.')->group(function () {
     Route::get('/step1', [OnboardingController::class, 'step1'])->name('step1');
-    Route::post('/step1', [OnboardingController::class, 'storeStep1'])->name('store1');
     Route::get('/step2', [OnboardingController::class, 'step2'])->name('step2');
+});
+
+// Onboarding mutation routes — must NOT be behind the onboarding middleware.
+// Once a user has subjects, hasCompletedOnboarding() returns true and the
+// middleware would intercept the POST, redirecting to dashboard before
+// the data is ever saved.
+Route::middleware(['auth'])->prefix('onboarding')->name('onboarding.')->group(function () {
+    Route::post('/step1', [OnboardingController::class, 'storeStep1'])->name('store1');
     Route::post('/step2/subject', [OnboardingController::class, 'storeSubject'])->name('storeSubject');
     Route::post('/step2/suggested', [OnboardingController::class, 'addSuggestedSubject'])->name('addSuggested');
     Route::delete('/step2/subject/{subject}', [OnboardingController::class, 'deleteSubject'])->name('deleteSubject');

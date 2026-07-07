@@ -115,9 +115,11 @@
             <form method="POST" action="{{ route('onboarding.complete') }}">
                 @csrf
 
-                {{-- Peer Network Opt-In (inside the form so it's submitted) --}}
+                {{-- Peer Network Opt-In --}}
                 <div class="mb-5">
                     <label class="flex items-start gap-3 cursor-pointer">
+                        {{-- Hidden field ensures a value is ALWAYS sent (0 = unchecked, 1 = checked) --}}
+                        <input type="hidden" name="is_opted_in" value="0">
                         <input type="checkbox" name="is_opted_in" value="1"
                             class="mt-0.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 shadow-sm">
                         <div>
