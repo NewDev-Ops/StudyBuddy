@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Message;
 use App\Models\User;
+use App\Services\PeerService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -52,9 +53,8 @@ class MessageController extends Controller
     {
         $currentUser = Auth::user();
 
-        if ($user->id === $currentUser->id) {
-            return redirect()->route('messages.index');
-        }
+        // Participant check: must have an existing conversation to read messages
+        $this->ensureParticipant($user, $currentUser, requireExistingConversation: true);
 
         Message::where('sender_id', $user->id)
             ->where('receiver_id', $currentUser->id)
@@ -76,8 +76,60 @@ class MessageController extends Controller
     {
         $currentUser = Auth::user();
 
-        if ($user->id === $currentUser->id) {
-            return response()->json(['error' => 'Cannot message yourself.'], 422);
+        // Participant check: block self-messaging
+        $this->ensureParticipant($user, $currentUser);
+
+        $isExistingConversation = Message::where(function ($q) use ($currentUser, $user) {
+                $q->where('sender_id', $currentUser->id)
+                  ->where('receiver_id', $user->id);
+            })->orWhere(function ($q) use ($currentUser, $user) {
+                $q->where('sender_id', $user->id)
+                  ->where('receiver_id', $currentUser->id);
+            })->exists();
+
+        if (!$isExistingConversation) {
+            // New conversation — run eligibility gate
+            if (!$user->is_opted_in) {
+                return response()->json([
+                    'error' => 'This user is not available for peer connection.'
+                ], 422);
+            }
+
+            $suggestedSubject = $currentUser->suggestedSubject();
+            if (!$suggestedSubject) {
+                return response()->json([
+                    'error' => 'Add subjects before connecting with peers.'
+                ], 422);
+            }
+
+            $peerService = app(PeerService::class);
+            $thresholds = $peerService->resolveThresholds(
+                $currentUser,
+                $suggestedSubject->normalized_name
+            );
+
+            $eligible = DB::selectOne("
+                SELECT u.id,
+                       ROUND(AVG(m.score * 100.0 / m.max_score), 1) AS avg_pct
+                FROM users u
+                INNER JOIN subjects s
+                    ON s.user_id = u.id
+                    AND s.normalized_name = ?
+                INNER JOIN marks m ON m.subject_id = s.id
+                WHERE u.id = ? AND u.is_opted_in = 1
+                GROUP BY u.id
+                HAVING avg_pct {$thresholds['comparison']} ?
+            ", [
+                $suggestedSubject->normalized_name,
+                $user->id,
+                $thresholds['threshold']
+            ]);
+
+            if (!$eligible) {
+                return response()->json([
+                    'error' => 'This user is not currently eligible as a peer suggestion.'
+                ], 422);
+            }
         }
 
         $data = $request->validate([
@@ -96,6 +148,27 @@ class MessageController extends Controller
             'success' => true,
             'message' => $message,
         ]);
+    }
+
+    private function ensureParticipant(User $otherUser, User $currentUser, bool $requireExistingConversation = false): void
+    {
+        if ($otherUser->id === $currentUser->id) {
+            abort(403, 'Cannot message yourself.');
+        }
+
+        if ($requireExistingConversation) {
+            $isParticipant = Message::where(function ($q) use ($currentUser, $otherUser) {
+                    $q->where('sender_id', $currentUser->id)
+                      ->where('receiver_id', $otherUser->id);
+                })->orWhere(function ($q) use ($currentUser, $otherUser) {
+                    $q->where('sender_id', $otherUser->id)
+                      ->where('receiver_id', $currentUser->id);
+                })->exists();
+
+            if (!$isParticipant) {
+                abort(403, 'You are not a participant in this conversation.');
+            }
+        }
     }
 
     public function unreadCount()

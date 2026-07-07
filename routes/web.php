@@ -28,8 +28,8 @@ Route::middleware(['auth', 'onboarding'])->prefix('onboarding')->name('onboardin
     Route::post('/complete', [OnboardingController::class, 'complete'])->name('complete');
 });
 
-// Student routes
-Route::middleware(['auth', 'onboarding'])->group(function () {
+// Authenticated routes with global baseline throttle
+Route::middleware(['auth', 'onboarding', 'throttle:120,1'])->group(function () {
     Route::get('/dashboard', [StudentDashboardController::class, 'index'])->name('dashboard');
 
     Route::get('/feedback', [\App\Http\Controllers\FeedbackController::class, 'create'])->name('feedback.create');
@@ -52,11 +52,16 @@ Route::middleware(['auth', 'onboarding'])->group(function () {
     Route::patch('/profile/peer-network', [ProfileController::class, 'togglePeerNetwork'])->name('profile.peer-network.toggle');
     Route::patch('/profile/university', [ProfileController::class, 'updateUniversity'])->name('profile.university.update');
 
+    // Message routes — GET list (index) is under global throttle
     Route::get('/messages', [\App\Http\Controllers\MessageController::class, 'index'])->name('messages.index');
     Route::get('/messages/{user}', [\App\Http\Controllers\MessageController::class, 'show'])->name('messages.show');
-    Route::post('/messages/{user}', [\App\Http\Controllers\MessageController::class, 'store'])->name('messages.store');
 
     Route::get('/report/student', [\App\Http\Controllers\ReportController::class, 'student'])->name('report.student');
+});
+
+// Message POST requires tighter rate limit (30/1min) to prevent spam
+Route::middleware(['auth', 'onboarding', 'throttle:30,1'])->group(function () {
+    Route::post('/messages/{user}', [\App\Http\Controllers\MessageController::class, 'store'])->name('messages.store');
 });
 
 Route::middleware(['auth'])->get('/subjects/search', [OnboardingController::class, 'search'])->name('subjects.search');

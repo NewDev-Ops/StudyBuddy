@@ -111,9 +111,9 @@ class User extends Authenticatable
             }
 
             if ($weightTotal == 0.0) {
-                $underperformanceScore = null;
-                $performanceWeight = 0.0;
-                $studyWeight = 1.0;
+                $underperformanceScore = 0.5;
+                $performanceWeight = 0.5;
+                $studyWeight = 0.5;
                 $weightedAvgPercent = null;
             } else {
                 $weightedAvg = $weightedSum / $weightTotal;
@@ -124,16 +124,16 @@ class User extends Authenticatable
             }
 
             $priority = ($neglectScore * $studyWeight)
-                      + (($underperformanceScore ?? 0.0) * $performanceWeight);
+                      + ($underperformanceScore * $performanceWeight);
 
             $scored[] = [
                 'subject'                => $subject,
                 'neglect_score'          => round($neglectScore, 4),
-                'underperformance_score' => $underperformanceScore !== null ? round($underperformanceScore, 4) : null,
+                'underperformance_score' => round($underperformanceScore, 4),
                 'priority_score'         => round($priority, 4),
                 'total_minutes'          => $totalMinutes,
                 'weighted_avg_percent'   => $weightedAvgPercent,
-                'mode'                   => $weightTotal == 0.0 ? 'neglect_only' : 'composite',
+                'mode'                   => $weightTotal == 0.0 ? 'no_marks' : 'composite',
             ];
         }
 
