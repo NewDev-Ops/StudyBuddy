@@ -42,10 +42,6 @@ class ProfileController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
-        $request->validateWithBag('userDeletion', [
-            'password' => ['required', 'current_password'],
-        ]);
-
         $user = $request->user();
 
         Auth::logout();
@@ -56,5 +52,24 @@ class ProfileController extends Controller
         $request->session()->regenerateToken();
 
         return Redirect::to('/');
+    }
+
+    public function togglePeerNetwork(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+        $user->update(['is_opted_in' => !$user->is_opted_in]);
+
+        return Redirect::route('profile.edit')->with('status', 'peer-network-updated');
+    }
+
+    public function updateUniversity(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'university_id' => 'nullable|exists:universities,id',
+        ]);
+
+        $request->user()->update($validated);
+
+        return Redirect::route('profile.edit')->with('status', 'university-updated');
     }
 }

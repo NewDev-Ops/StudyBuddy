@@ -9,7 +9,8 @@
 </head>
 <body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center py-12 px-4">
 
-    <div class="bg-white rounded-2xl shadow-md w-full max-w-md px-8 py-10 animate-fade-in-up">
+    <div class="bg-white rounded-2xl shadow-md w-full max-w-md px-8 py-10 animate-fade-in-up"
+         x-data="{ showConfirm: false, confirmAction: '', confirmSubject: '' }">
 
         {{-- Progress --}}
         <div class="flex items-center gap-2 mb-8">
@@ -29,21 +30,37 @@
         </div>
 
         {{-- Add Subject Form --}}
-        <form method="POST" action="{{ route('onboarding.storeSubject') }}" class="mb-5 animate-fade-in-up" style="animation-delay: 200ms">
-            @csrf
-            <div class="flex gap-2">
-                <input type="text" name="name" value="{{ old('name') }}" placeholder="e.g. Computer Science"
-                    class="flex-1 border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                    required>
-                <button type="submit"
-                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg transition text-sm font-semibold shrink-0">
-                    Add
-                </button>
-            </div>
-            @error('name')
-                <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
-            @enderror
-        </form>
+        <div class="mb-5 animate-fade-in-up" style="animation-delay: 200ms" x-data="subjectSearch()" @click.away="showDropdown = false">
+            <form method="POST" action="{{ route('onboarding.storeSubject') }}">
+                @csrf
+                <div class="flex gap-2">
+                    <div class="flex-1 relative">
+                        <input type="text" name="name" value="{{ old('name') }}" placeholder="e.g. Computer Science"
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                            required x-model="query" @input="search">
+                        <div x-show="showDropdown && results.length > 0" x-transition
+                            class="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                            <template x-for="result in results" :key="result">
+                                <button type="button" @mousedown.prevent="selectSuggestion(result)"
+                                    class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition flex items-center gap-2">
+                                    <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                                    </svg>
+                                    <span x-text="result"></span>
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+                    <button type="submit"
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg transition text-sm font-semibold shrink-0">
+                        Add
+                    </button>
+                </div>
+                @error('name')
+                    <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                @enderror
+            </form>
+        </div>
 
         {{-- Suggested Subjects --}}
         @if($suggestedSubjects->isNotEmpty())
@@ -78,10 +95,10 @@
                                 <div class="w-3 h-3 rounded-full" style="background-color: {{ $subject->color_code }}"></div>
                                 <span class="text-sm text-gray-700">{{ $subject->name }}</span>
                             </div>
-                            <form method="POST" action="{{ route('onboarding.deleteSubject', $subject) }}" onsubmit="return confirm('Remove this subject?')">
+                            <form method="POST" action="{{ route('onboarding.deleteSubject', $subject) }}">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="text-gray-400 hover:text-red-500 transition">
+                                <button type="button" @click.prevent="confirmAction = '{{ route('onboarding.deleteSubject', $subject) }}'; confirmSubject = '{{ $subject->name }}'; showConfirm = true" class="text-gray-400 hover:text-red-500 transition">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                                     </svg>
@@ -93,14 +110,100 @@
             </div>
         @endif
 
+        {{-- Peer Network Opt-In --}}
+        <div class="mb-5 animate-fade-in" style="animation-delay: 420ms">
+            <label class="flex items-start gap-3 cursor-pointer">
+                <input type="checkbox" name="is_opted_in" value="1"
+                    class="mt-0.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 shadow-sm">
+                <div>
+                    <p class="text-sm font-medium text-gray-800">Join the peer network</p>
+                    <p class="text-xs text-gray-500 mt-0.5">Let other students discover you as a study partner. Only your name, university, and strong subjects are ever shown. Your marks stay private. You can change this anytime.</p>
+                </div>
+            </label>
+        </div>
+
         {{-- Actions --}}
         <div class="animate-fade-in-up" style="animation-delay: 500ms">
-            <a href="{{ route('onboarding.complete') }}"
-                class="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg transition text-sm">
-                {{ $userSubjects->isNotEmpty() ? 'Finish Setup' : 'Skip for now' }}
-            </a>
+            <form method="POST" action="{{ route('onboarding.complete') }}">
+                @csrf
+                <button type="submit"
+                    class="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg transition text-sm">
+                    {{ $userSubjects->isNotEmpty() ? 'Finish Setup' : 'Skip for now' }}
+                </button>
+            </form>
         </div>
     </div>
 
+    {{-- Confirm Delete Modal --}}
+    <div x-show="showConfirm" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/40" @click="showConfirm = false"></div>
+        <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 animate-fade-in-up">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-gray-900">Remove Subject</h3>
+                    <p class="text-sm text-gray-500">This will only remove it from your list.</p>
+                </div>
+            </div>
+            <p class="text-sm text-gray-700 mb-6">
+                Are you sure you want to remove <strong x-text="confirmSubject"></strong>?
+            </p>
+            <form method="POST" x-bind:action="confirmAction">
+                @csrf
+                @method('DELETE')
+                <div class="flex gap-3">
+                    <button type="button" @click="showConfirm = false"
+                        class="flex-1 border border-gray-300 text-gray-700 font-semibold py-2.5 rounded-lg transition text-sm hover:bg-gray-50">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                        class="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-2.5 rounded-lg transition text-sm">
+                        Remove
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function subjectSearch() {
+            return {
+                query: '',
+                results: [],
+                showDropdown: false,
+                search: async function() {
+                    if (this.query.length < 2) {
+                        this.results = [];
+                        this.showDropdown = false;
+                        return;
+                    }
+                    try {
+                        const response = await fetch('{{ route("subjects.search") }}?q=' + encodeURIComponent(this.query), {
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                            }
+                        });
+                        this.results = await response.json();
+                        this.showDropdown = this.results.length > 0;
+                    } catch (e) {
+                        this.results = [];
+                        this.showDropdown = false;
+                    }
+                },
+                selectSuggestion: function(value) {
+                    this.query = value;
+                    this.showDropdown = false;
+                }
+            }
+        }
+    </script>
+
+    <x-coming-soon-modal />
 </body>
 </html>

@@ -18,7 +18,7 @@ class OnboardingController extends Controller
     public function storeStep1(Request $request)
     {
         $request->validate([
-            'university_id' => 'nullable|exists:universities,id',
+            'university_id' => 'required|exists:universities,id',
         ]);
 
         Auth::user()->update([
@@ -91,6 +91,10 @@ class OnboardingController extends Controller
             $subject->delete();
         }
 
+        if (Auth::user()->hasCompletedOnboarding()) {
+            return redirect()->route('dashboard');
+        }
+
         return redirect()->route('onboarding.step2');
     }
 
@@ -114,9 +118,34 @@ class OnboardingController extends Controller
         return redirect()->route('dashboard');
     }
 
-    public function complete()
+    public function search(Request $request)
     {
-        Auth::user()->update(['is_opted_in' => true]);
+        $query = $request->input('q', '');
+
+        if (strlen($query) < 2) {
+            return response()->json([]);
+        }
+
+        $userSubjects = Auth::user()->subjects()->pluck('name')->map(fn ($n) => strtolower($n))->toArray();
+
+        $results = Subject::whereRaw('LOWER(name) LIKE ?', ['%' . strtolower($query) . '%'])
+            ->select('name')
+            ->groupBy('name')
+            ->orderByRaw('COUNT(*) DESC')
+            ->limit(8)
+            ->pluck('name')
+            ->filter(fn ($name) => !in_array(strtolower($name), $userSubjects))
+            ->values();
+
+        return response()->json($results);
+    }
+
+    public function complete(Request $request)
+    {
+        Auth::user()->update([
+            'is_opted_in' => $request->boolean('is_opted_in'),
+        ]);
+
         return redirect()->route('dashboard');
     }
 

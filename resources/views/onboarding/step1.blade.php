@@ -26,6 +26,7 @@
                 </svg>
             </div>
             <h1 class="text-xl font-bold text-gray-900">Welcome to Revisor</h1>
+            <p class="text-xs text-gray-400 mt-0.5">Built by students for students</p>
             <p class="text-sm text-gray-500 mt-1 text-center">Let's set up your account. Where do you study?</p>
         </div>
 
@@ -67,5 +68,6 @@
         </form>
     </div>
 
+    <x-coming-soon-modal />
 </body>
 </html>
