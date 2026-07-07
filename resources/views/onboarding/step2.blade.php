@@ -7,20 +7,24 @@
     <title>Revisor — Onboarding</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center py-12 px-4">
+<body class="min-h-screen flex flex-col items-center justify-center py-12 px-4 relative" style="background-color: #f1f5f9; background-image: radial-gradient(circle at 1px 1px, rgba(59,130,246,0.06) 1px, transparent 0); background-size: 24px 24px;">
 
-    <div class="bg-white rounded-2xl shadow-md w-full max-w-md px-8 py-10 animate-fade-in-up"
+    {{-- Decorative blobs --}}
+    <div class="absolute top-0 right-0 w-72 h-72 bg-blue-100/30 rounded-full blur-3xl pointer-events-none translate-x-1/2 -translate-y-1/2"></div>
+    <div class="absolute bottom-0 left-0 w-96 h-96 bg-blue-100/20 rounded-full blur-3xl pointer-events-none -translate-x-1/3 translate-y-1/3"></div>
+
+    <div class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg w-full max-w-md px-8 py-10 animate-fade-in-up relative"
          x-data="{ showConfirm: false, confirmAction: '', confirmSubject: '' }">
 
         {{-- Progress --}}
         <div class="flex items-center gap-2 mb-8">
-            <div class="flex-1 h-1.5 bg-blue-600 rounded-full"></div>
-            <div class="flex-1 h-1.5 bg-blue-600 rounded-full"></div>
+            <div class="flex-1 h-1.5 bg-gradient-to-r from-blue-600 to-blue-500 rounded-full shadow-sm"></div>
+            <div class="flex-1 h-1.5 bg-gradient-to-r from-blue-600 to-blue-500 rounded-full shadow-sm"></div>
         </div>
 
         {{-- Header --}}
         <div class="flex flex-col items-center mb-6 animate-fade-in" style="animation-delay: 100ms">
-            <div class="bg-blue-600 rounded-xl p-2.5 mb-3 animate-logo-pulse">
+            <div class="bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl p-2.5 mb-3 animate-logo-pulse shadow-md">
                 <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
                 </svg>
