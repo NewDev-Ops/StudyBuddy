@@ -14,7 +14,7 @@
 
     <div class="py-8">
         <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between mb-5">
+            <div class="flex items-center justify-between mb-3">
                 <div>
                     <h3 class="text-lg font-bold text-gray-900">Conversations</h3>
                     <p class="text-xs text-gray-400 mt-0.5">
@@ -26,6 +26,16 @@
                 @if($unreadCount > 0)
                     <span class="text-xs bg-blue-100 text-blue-700 font-semibold px-2.5 py-1 rounded-full">{{ $unreadCount }} unread</span>
                 @endif
+            </div>
+
+            {{-- Disclaimer --}}
+            <div class="mb-5 bg-gradient-to-r from-blue-50/80 to-indigo-50/80 border border-blue-100 rounded-xl px-4 py-2.5 flex items-start gap-2.5">
+                <svg class="w-4 h-4 text-blue-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                </svg>
+                <p class="text-[11px] text-gray-500 leading-relaxed">
+                    Chats are strictly for academic purposes. Do not share personal or private information. Revisor is not responsible for anything shared on this platform &mdash; this feature is a work in progress.
+                </p>
             </div>
 
             {{-- Pending Connection Requests --}}

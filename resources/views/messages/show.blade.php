@@ -42,6 +42,12 @@
                                 Send Connection Request
                             </button>
                             <div id="request-error" class="mt-4 text-sm text-red-500 hidden"></div>
+                            <p class="mt-6 text-[10px] text-gray-400 leading-relaxed max-w-xs mx-auto">
+                                <svg class="w-3 h-3 inline -mt-0.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                                </svg>
+                                Chats are strictly for academic purposes. Do not share personal information. This is a work in progress.
+                            </p>
                         </div>
 
                     @elseif($connectionStatus === 'pending_sent')
@@ -61,6 +67,12 @@
                                 Cancel Request
                             </button>
                             <div id="cancel-error" class="mt-3 text-sm text-red-500 hidden"></div>
+                            <p class="mt-6 text-[10px] text-gray-400 leading-relaxed max-w-xs mx-auto">
+                                <svg class="w-3 h-3 inline -mt-0.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                                </svg>
+                                Chats are strictly for academic purposes. Do not share personal information. This is a work in progress.
+                            </p>
                         </div>
 
                     @elseif($connectionStatus === 'pending_received')
@@ -89,6 +101,12 @@
                                 </button>
                             </div>
                             <div id="response-error" class="mt-3 text-sm text-red-500 hidden"></div>
+                            <p class="mt-6 text-[10px] text-gray-400 leading-relaxed max-w-xs mx-auto">
+                                <svg class="w-3 h-3 inline -mt-0.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                                </svg>
+                                Chats are strictly for academic purposes. Do not share personal information. This is a work in progress.
+                            </p>
                         </div>
 
                     @elseif($connectionStatus === 'rejected')
@@ -108,12 +126,27 @@
                                 Send Request Again
                             </button>
                             <div id="request-error" class="mt-4 text-sm text-red-500 hidden"></div>
+                            <p class="mt-6 text-[10px] text-gray-400 leading-relaxed max-w-xs mx-auto">
+                                <svg class="w-3 h-3 inline -mt-0.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                                </svg>
+                                Chats are strictly for academic purposes. Do not share personal information. This is a work in progress.
+                            </p>
                         </div>
                     @endif
                 </div>
             @else
                 {{-- Chat interface (existing messages or accepted connection) --}}
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col" style="height: 70vh;">
+                    {{-- Disclaimer --}}
+                    <div class="shrink-0 bg-gradient-to-r from-blue-50/80 to-indigo-50/80 border-b border-blue-100 px-5 py-2.5 flex items-start gap-2.5">
+                        <svg class="w-4 h-4 text-blue-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                        </svg>
+                        <p class="text-[11px] text-gray-500 leading-relaxed">
+                            This chat is strictly for academic purposes. Do not share personal or private information. Revisor is not responsible for any information shared on this platform &mdash; this feature is a work in progress.
+                        </p>
+                    </div>
                     <div id="message-container" class="flex-1 overflow-y-auto px-5 py-4 space-y-3" style="background-image: radial-gradient(circle at 1px 1px, rgba(59,130,246,0.04) 1px, transparent 0); background-size: 24px 24px;">
                         @forelse($messages as $msg)
                             <div class="flex {{ $msg->sender_id === Auth::id() ? 'justify-end' : 'justify-start' }} animate-fade-in-up" style="animation-duration: 0.2s">
