@@ -1,6 +1,64 @@
 <x-app-layout>
-    <div class="py-8" x-data="{ showConfirm: false, confirmAction: '', confirmLabel: '', showSuggester: false }">
+    <div class="py-8" x-data="{ showConfirm: false, confirmAction: '', confirmLabel: '', showSuggester: false, dismissedRejected: [] }">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+
+            {{-- ============================================================ --}}
+            {{-- Connection Request Notifications                             --}}
+            {{-- ============================================================ --}}
+            @if($pendingRequests->isNotEmpty())
+            <div class="mb-6 animate-fade-in-up" style="animation-delay: 50ms">
+                @foreach($pendingRequests as $req)
+                <div class="bg-amber-50 border border-amber-200 rounded-xl px-5 py-4 flex items-center justify-between gap-4 mb-2 last:mb-0 shadow-sm" data-sender-id="{{ $req->sender_id }}">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-sm font-bold text-white shadow-sm shrink-0">
+                            {{ collect(preg_split('/\s+/', $req->sender->name))->take(2)->map(fn($w) => strtoupper(substr($w, 0, 1)))->join('') }}
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-sm font-semibold text-gray-900"><strong>{{ $req->sender->name }}</strong> wants to connect with you</p>
+                            <p class="text-xs text-gray-500 mt-0.5">Accept to start chatting</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <button type="button" onclick="dashboardAccept({{ $req->id }}, this)"
+                                class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg transition shadow-sm">
+                            Accept
+                        </button>
+                        <button type="button" onclick="dashboardReject({{ $req->id }}, this)"
+                                class="px-4 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-xs font-semibold rounded-lg transition">
+                            Reject
+                        </button>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+            @endif
+
+            @if($rejectedNotifications->isNotEmpty())
+                @foreach($rejectedNotifications as $rej)
+                <div x-data="{ show: true }" x-show="show && !dismissedRejected.includes({{ $rej->id }})" x-cloak
+                     class="mb-2 animate-fade-in-up" style="animation-delay: 50ms">
+                    <div class="bg-red-50 border border-red-200 rounded-xl px-5 py-3 flex items-center justify-between gap-4 shadow-sm">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+                                <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </div>
+                            <p class="text-sm text-gray-700">
+                                <strong>{{ $rej->receiver->name }}</strong> declined your connection request.
+                            </p>
+                        </div>
+                        <button @click="dismissedRejected.push({{ $rej->id }})"
+                                class="text-gray-400 hover:text-gray-600 transition shrink-0 p-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                @endforeach
+            @endif
+
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
                 {{-- ============================================================ --}}
@@ -756,6 +814,51 @@
     @endif
 
     <script>
+        const BASE_URL = '{{ url("") }}';
+
+        function dashboardAccept(requestId, btn) {
+            btn.disabled = true;
+            fetch(BASE_URL + '/chat-requests/' + requestId + '/accept', {
+                method: 'PATCH',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                },
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    const card = btn.closest('.bg-amber-50');
+                    const senderId = card.getAttribute('data-sender-id');
+                    card.innerHTML = '<div class="flex items-center gap-3 text-sm text-emerald-700 font-medium py-2"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>Accepted! Redirecting to chat...</div>';
+                    setTimeout(() => {
+                        window.location.href = BASE_URL + '/messages/' + senderId;
+                    }, 1200);
+                }
+            })
+            .catch(() => { btn.disabled = false; });
+        }
+
+        function dashboardReject(requestId, btn) {
+            btn.disabled = true;
+            fetch(BASE_URL + '/chat-requests/' + requestId + '/reject', {
+                method: 'PATCH',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                },
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    const card = btn.closest('.bg-amber-50');
+                    card.innerHTML = '<p class="text-sm text-gray-500 font-medium py-2">Request dismissed.</p>';
+                    setTimeout(() => card.remove(), 1500);
+                }
+            })
+            .catch(() => { btn.disabled = false; });
+        }
+
         function openDeleteModal(name, url) {
             document.getElementById('delete-subject-name').textContent = name;
             document.getElementById('delete-subject-form').action = url;

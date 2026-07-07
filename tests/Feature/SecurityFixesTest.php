@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\ConnectRequest;
 use App\Models\User;
 use App\Models\Subject;
 use App\Models\Message;
@@ -30,19 +31,13 @@ class SecurityFixesTest extends TestCase
     }
 
     // ================================================================
-    // A11 — CONNECT ELIGIBILITY GATE
+    // A11 — CONNECT REQUEST REQUIRED FOR NEW CONVERSATIONS
     // ================================================================
 
-    public function test_a11_rejects_new_conversation_with_non_opted_in_user()
+    public function test_a11_rejects_new_conversation_without_accepted_request()
     {
-        $sender = $this->createUserWithOnboarding(['is_opted_in' => true]);
-        $target = $this->createUserWithOnboarding(['is_opted_in' => false]);
-
-        Subject::create([
-            'user_id' => $sender->id,
-            'name' => 'Mathematics',
-            'color_code' => '#f59e0b',
-        ]);
+        $sender = User::factory()->create(['is_opted_in' => true]);
+        $target = User::factory()->create(['is_opted_in' => true]);
 
         $this->actingAs($sender);
 
@@ -51,23 +46,21 @@ class SecurityFixesTest extends TestCase
         ]);
 
         $response->assertStatus(422);
-        $response->assertJson(['error' => 'This user is not available for peer connection.']);
+        $response->assertJson(['error' => 'You must send a connection request first. The recipient must accept before you can start chatting.']);
     }
 
-    public function test_a11_eligibility_gate_runs_for_new_conversation()
+    public function test_a11_allows_messaging_after_connect_request_accepted()
     {
         $sender = User::factory()->create(['is_opted_in' => true]);
         $target = User::factory()->create(['is_opted_in' => true]);
 
-        // Give sender a subject so they have a suggested subject
-        Subject::create([
-            'user_id' => $sender->id,
-            'name' => 'Mathematics',
-            'color_code' => '#f59e0b',
+        // Create an accepted connect request
+        ConnectRequest::create([
+            'sender_id' => $sender->id,
+            'receiver_id' => $target->id,
+            'status' => 'accepted',
+            'responded_at' => now(),
         ]);
-
-        // Target has no marks in Mathematics — eligibility SQL returns nothing
-        // Because INNER JOIN marks produces no rows, eligible is null
 
         $this->actingAs($sender);
 
@@ -75,15 +68,14 @@ class SecurityFixesTest extends TestCase
             'message' => 'Hello!',
         ]);
 
-        $response->assertStatus(422, 'Eligibility check should reject new conversation with ineligible peer');
-        $response->assertJson(['error' => 'This user is not currently eligible as a peer suggestion.']);
+        $response->assertStatus(200);
     }
 
     // ================================================================
     // A12 — CHAT PARTICIPANT AUTHORIZATION
     // ================================================================
 
-    public function test_a12_rejects_show_with_no_existing_conversation()
+    public function test_a12_shows_connect_page_with_no_existing_conversation()
     {
         $user = $this->createUserWithOnboarding();
         $target = $this->createUserWithOnboarding();
@@ -92,7 +84,8 @@ class SecurityFixesTest extends TestCase
 
         $response = $this->get("/messages/{$target->id}");
 
-        $response->assertStatus(403);
+        $response->assertStatus(200);
+        $response->assertSee('Connect with');
     }
 
     public function test_a12_rejects_self_messaging_show()

@@ -1,5 +1,10 @@
 @php
     $unreadCount = \App\Models\Message::where('receiver_id', Auth::id())->whereNull('read_at')->count();
+    $pendingRequests = \App\Models\ConnectRequest::with('sender')
+        ->where('receiver_id', Auth::id())
+        ->where('status', 'pending')
+        ->orderBy('created_at', 'desc')
+        ->get();
 @endphp
 
 <x-app-layout>
@@ -22,6 +27,38 @@
                     <span class="text-xs bg-blue-100 text-blue-700 font-semibold px-2.5 py-1 rounded-full">{{ $unreadCount }} unread</span>
                 @endif
             </div>
+
+            {{-- Pending Connection Requests --}}
+            @if($pendingRequests->isNotEmpty())
+                <div class="mb-6">
+                    <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Pending Connection Requests</h4>
+                    <div class="space-y-2">
+                        @foreach($pendingRequests as $req)
+                            <div class="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex items-center justify-between gap-3">
+                                <div class="flex items-center gap-3 min-w-0">
+                                    <div class="w-9 h-9 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-xs font-bold text-white shadow-sm shrink-0">
+                                        {{ collect(preg_split('/\s+/', $req->sender->name))->take(2)->map(fn($w) => strtoupper(substr($w, 0, 1)))->join('') }}
+                                    </div>
+                                    <div class="min-w-0">
+                                        <p class="text-sm font-semibold text-gray-900 truncate">{{ $req->sender->name }}</p>
+                                        <p class="text-xs text-gray-500">wants to connect with you</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2 shrink-0">
+                                    <button type="button" onclick="acceptRequest({{ $req->id }}, this)"
+                                            class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg transition shadow-sm">
+                                        Accept
+                                    </button>
+                                    <button type="button" onclick="rejectRequest({{ $req->id }}, this)"
+                                            class="px-3 py-1.5 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-xs font-semibold rounded-lg transition">
+                                        Reject
+                                    </button>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
 
             <div class="bg-white/95 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 @forelse($conversations as $conv)
@@ -73,3 +110,57 @@
         </div>
     </div>
 </x-app-layout>
+
+<script>
+    const BASE_URL = '{{ url("") }}';
+
+    function acceptRequest(id, btn) {
+        btn.disabled = true;
+        fetch(BASE_URL + '/chat-requests/' + id + '/accept', {
+            method: 'PATCH',
+            headers: {
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content,
+            },
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                const card = btn.closest('.bg-amber-50');
+                card.innerHTML = '<p class="text-sm text-emerald-700 font-medium py-1">Request accepted! You can now chat.</p>';
+                setTimeout(() => {
+                    card.remove();
+                    if (document.querySelectorAll('.bg-amber-50').length === 0) {
+                        document.querySelector('.mb-6')?.remove();
+                    }
+                }, 2000);
+            }
+        })
+        .catch(() => { btn.disabled = false; });
+    }
+
+    function rejectRequest(id, btn) {
+        btn.disabled = true;
+        fetch(BASE_URL + '/chat-requests/' + id + '/reject', {
+            method: 'PATCH',
+            headers: {
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content,
+            },
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                const card = btn.closest('.bg-amber-50');
+                card.innerHTML = '<p class="text-sm text-gray-500 font-medium py-1">Request rejected.</p>';
+                setTimeout(() => {
+                    card.remove();
+                    if (document.querySelectorAll('.bg-amber-50').length === 0) {
+                        document.querySelector('.mb-6')?.remove();
+                    }
+                }, 2000);
+            }
+        })
+        .catch(() => { btn.disabled = false; });
+    }
+</script>

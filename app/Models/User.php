@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Models\ConnectRequest;
 
 class User extends Authenticatable
 {   
@@ -46,6 +47,23 @@ class User extends Authenticatable
     public function subjects(): HasMany
     {
         return $this->hasMany(Subject::class);
+    }
+
+    public function sentConnectRequests(): HasMany
+    {
+        return $this->hasMany(ConnectRequest::class, 'sender_id');
+    }
+
+    public function receivedConnectRequests(): HasMany
+    {
+        return $this->hasMany(ConnectRequest::class, 'receiver_id');
+    }
+
+    public function hasAcceptedConnectionWith(User $other): bool
+    {
+        return ConnectRequest::between($this, $other)
+            ->accepted()
+            ->exists();
     }
 
     public function hasCompletedOnboarding(): bool

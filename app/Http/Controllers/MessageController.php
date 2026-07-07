@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ConnectRequest;
 use App\Models\Message;
 use App\Models\User;
-use App\Services\PeerService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -53,23 +53,60 @@ class MessageController extends Controller
     {
         $currentUser = Auth::user();
 
-        // Participant check: must have an existing conversation to read messages
-        $this->ensureParticipant($user, $currentUser, requireExistingConversation: true);
+        $this->ensureParticipant($user, $currentUser);
 
-        Message::where('sender_id', $user->id)
-            ->where('receiver_id', $currentUser->id)
-            ->whereNull('read_at')
-            ->update(['read_at' => now()]);
-
-        $messages = Message::where(function ($q) use ($currentUser, $user) {
+        $hasMessages = Message::where(function ($q) use ($currentUser, $user) {
                 $q->where('sender_id', $currentUser->id)->where('receiver_id', $user->id);
             })->orWhere(function ($q) use ($currentUser, $user) {
                 $q->where('sender_id', $user->id)->where('receiver_id', $currentUser->id);
-            })
-            ->orderBy('created_at', 'asc')
-            ->get();
+            })->exists();
 
-        return view('messages.show', compact('messages', 'user'));
+        if ($hasMessages) {
+            Message::where('sender_id', $user->id)
+                ->where('receiver_id', $currentUser->id)
+                ->whereNull('read_at')
+                ->update(['read_at' => now()]);
+
+            $messages = Message::where(function ($q) use ($currentUser, $user) {
+                    $q->where('sender_id', $currentUser->id)->where('receiver_id', $user->id);
+                })->orWhere(function ($q) use ($currentUser, $user) {
+                    $q->where('sender_id', $user->id)->where('receiver_id', $currentUser->id);
+                })
+                ->orderBy('created_at', 'asc')
+                ->get();
+
+            return view('messages.show', compact('messages', 'user'));
+        }
+
+        // No existing conversation — determine connection status
+        $request = ConnectRequest::between($currentUser, $user)
+            ->latest()
+            ->first();
+
+        $connectionStatus = 'none';
+        $connectRequest = null;
+
+        if ($request) {
+            if ($request->status === 'accepted') {
+                $connectionStatus = 'accepted';
+            } elseif ($request->status === 'pending' && $request->sender_id === $currentUser->id) {
+                $connectionStatus = 'pending_sent';
+                $connectRequest = $request;
+            } elseif ($request->status === 'pending' && $request->receiver_id === $currentUser->id) {
+                $connectionStatus = 'pending_received';
+                $connectRequest = $request;
+            } elseif ($request->status === 'rejected' && $request->sender_id === $currentUser->id) {
+                $connectionStatus = 'rejected';
+                $connectRequest = $request;
+            }
+        }
+
+        return view('messages.show', [
+            'messages' => collect(),
+            'user' => $user,
+            'connectionStatus' => $connectionStatus,
+            'connectRequest' => $connectRequest,
+        ]);
     }
 
     public function store(Request $request, User $user)
@@ -88,46 +125,13 @@ class MessageController extends Controller
             })->exists();
 
         if (!$isExistingConversation) {
-            // New conversation — run eligibility gate
-            if (!$user->is_opted_in) {
+            $hasAcceptedRequest = ConnectRequest::between($currentUser, $user)
+                ->accepted()
+                ->exists();
+
+            if (!$hasAcceptedRequest) {
                 return response()->json([
-                    'error' => 'This user is not available for peer connection.'
-                ], 422);
-            }
-
-            $suggestedSubject = $currentUser->suggestedSubject();
-            if (!$suggestedSubject) {
-                return response()->json([
-                    'error' => 'Add subjects before connecting with peers.'
-                ], 422);
-            }
-
-            $peerService = app(PeerService::class);
-            $thresholds = $peerService->resolveThresholds(
-                $currentUser,
-                $suggestedSubject->normalized_name
-            );
-
-            $eligible = DB::selectOne("
-                SELECT u.id,
-                       ROUND(AVG(m.score * 100.0 / m.max_score), 1) AS avg_pct
-                FROM users u
-                INNER JOIN subjects s
-                    ON s.user_id = u.id
-                    AND s.normalized_name = ?
-                INNER JOIN marks m ON m.subject_id = s.id
-                WHERE u.id = ? AND u.is_opted_in = 1
-                GROUP BY u.id
-                HAVING avg_pct {$thresholds['comparison']} ?
-            ", [
-                $suggestedSubject->normalized_name,
-                $user->id,
-                $thresholds['threshold']
-            ]);
-
-            if (!$eligible) {
-                return response()->json([
-                    'error' => 'This user is not currently eligible as a peer suggestion.'
+                    'error' => 'You must send a connection request first. The recipient must accept before you can start chatting.'
                 ], 422);
             }
         }
