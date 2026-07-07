@@ -1,5 +1,5 @@
 <x-app-layout>
-    <div class="py-8" x-data="{ showConfirm: false, confirmAction: '', confirmLabel: '' }">
+    <div class="py-8" x-data="{ showConfirm: false, confirmAction: '', confirmLabel: '', showSuggester: false }" @open-suggester="showSuggester = true">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
@@ -15,6 +15,13 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                             </svg>
                             <h3 class="text-sm font-bold text-gray-900">Study Next</h3>
+                            @if(!empty($allSubjectScores))
+                            <button @click="$dispatch('open-suggester')" class="ml-auto text-gray-400 hover:text-blue-600 transition" title="Why this suggestion?">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            </button>
+                            @endif
                         </div>
 
                         @if($suggestedSubject)
@@ -54,6 +61,16 @@
                         </div>
                         @endif
 
+                        @php
+                            function resourceSource(string $url): string {
+                                $host = parse_url($url, PHP_URL_HOST) ?: '';
+                                if (str_contains($host, 'khanacademy')) return 'Khan Academy';
+                                if (str_contains($host, 'mit.edu')) return 'MIT';
+                                if (str_contains($host, 'youtube') || str_contains($host, 'youtu.be')) return 'YouTube';
+                                return 'Resource';
+                            }
+                        @endphp
+
                         {{-- Quick Resources --}}
                         <div class="mb-5">
                             <div class="flex items-center gap-2 mb-3">
@@ -65,22 +82,33 @@
                             <div class="space-y-2">
                                 @forelse($recommendedResources as $resource)
                                 <a href="{{ $resource->url }}" target="_blank" rel="noopener noreferrer"
-                                    class="flex items-center gap-3 p-2 rounded-lg w-full text-left hover:bg-blue-50 transition group">
-                                    <div class="bg-blue-100 rounded-lg p-1.5">
-                                        <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
-                                        </svg>
+                                    class="flex flex-col gap-1 p-2 rounded-lg w-full text-left hover:bg-blue-50 transition group">
+                                    <div class="flex items-center gap-3">
+                                        <div class="bg-blue-100 rounded-lg p-1.5 shrink-0">
+                                            <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                                            </svg>
+                                        </div>
+                                        <div class="min-w-0 flex-1">
+                                            <span class="text-sm text-gray-700 group-hover:text-blue-700 transition font-medium block truncate">{{ $resource->title }}</span>
+                                            <span class="text-[10px] font-medium text-gray-400 uppercase tracking-wider">{{ resourceSource($resource->url) }}</span>
+                                        </div>
                                     </div>
-                                    <span class="text-sm text-gray-700 group-hover:text-blue-700 transition font-medium">{{ $resource->title }}</span>
+                                    @if($suggestedSubject)
+                                    <span class="text-[10px] text-blue-500 ml-9">Recommended for {{ $suggestedSubject->name }}</span>
+                                    @endif
                                 </a>
                                 @empty
-                                <p class="text-xs text-gray-400 text-center py-3">No resources available for this subject yet.</p>
+                                <div class="text-center py-4 px-2">
+                                    <p class="text-xs text-gray-400">No resources yet for <strong class="text-gray-500">{{ $suggestedSubject->name ?? 'this subject' }}</strong>.</p>
+                                    <p class="text-[10px] text-gray-400 mt-1">Resources are curated by your university. Check back later or suggest new ones via feedback.</p>
+                                </div>
                                 @endforelse
                             </div>
                         </div>
 
                         {{-- Peer Insights --}}
-                        <div>
+                        <div x-data="{ showPeerInfo: false }">
                             <div class="flex items-center gap-2 mb-3">
                                 <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -102,7 +130,7 @@
                                     <p class="text-xs text-gray-400 text-center py-3">No peer matches yet for this subject.</p>
                                 @else
                                     @foreach($peerSuggestions as $peer)
-                                    <div class="rounded-lg p-1 -ml-1">
+                                    <div class="rounded-lg p-1 -ml-1" x-data="{ showTip: false }">
                                         <div class="flex items-center gap-3">
                                             <div class="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center text-xs font-bold text-emerald-700 shrink-0">
                                                 {{ collect(preg_split('/\s+/', $peer->name))->take(2)->map(fn($w) => strtoupper(substr($w, 0, 1)))->join('') }}
@@ -111,6 +139,21 @@
                                                 <p class="text-sm font-medium text-gray-900 truncate">{{ $peer->name }}</p>
                                                 <p class="text-xs text-gray-500 truncate">{{ $peer->university_name ?? 'Unknown University' }}</p>
                                                 <p class="text-[10px] text-emerald-600 font-medium mt-0.5">Strong in {{ $peer->subject_name }}</p>
+                                            </div>
+                                            <div class="relative shrink-0">
+                                                <button @mouseenter="showTip = true" @mouseleave="showTip = false" @touchstart.prevent="showTip = !showTip" class="text-gray-400 hover:text-blue-600 transition p-1">
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                                    </svg>
+                                                </button>
+                                                <div x-show="showTip" x-cloak @click.away="showTip = false" class="absolute bottom-full right-0 mb-2 w-52 bg-gray-900 text-white text-[11px] rounded-lg p-2.5 shadow-lg z-10 leading-relaxed">
+                                                    @if($peerComparisonMode === 'relative')
+                                                    Matched because they score higher than you in <strong>{{ $suggestedSubject->name ?? 'this subject' }}</strong>, suggesting they can offer helpful strategies.
+                                                    @else
+                                                    Matched as a top performer in <strong>{{ $suggestedSubject->name ?? 'this subject' }}</strong>, suggesting they have strong study habits to learn from.
+                                                    @endif
+                                                    <div class="absolute -bottom-1 right-3 w-2 h-2 bg-gray-900 rotate-45"></div>
+                                                </div>
                                             </div>
                                         </div>
                                         <div class="mt-1.5 ml-12">
@@ -123,6 +166,22 @@
                                     @endforeach
                                 @endif
                             </div>
+                            @if($peerSuggestions !== null && !$peerSuggestions->isEmpty())
+                            <button @click="showPeerInfo = !showPeerInfo" class="mt-3 flex items-center gap-1 text-[10px] text-gray-400 hover:text-blue-600 transition font-medium">
+                                <svg class="w-3 h-3" :class="{ 'rotate-90': showPeerInfo }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                </svg>
+                                How peers are selected
+                            </button>
+                            <div x-show="showPeerInfo" x-collapse class="mt-2 text-[10px] text-gray-400 leading-relaxed space-y-1.5">
+                                @if($peerComparisonMode === 'relative')
+                                <p>You have marks in this subject, so we found <strong class="text-gray-500">students scoring higher than you</strong> at your university first, then beyond.</p>
+                                @else
+                                <p>You don't have marks yet in this subject, so we show <strong class="text-gray-500">top performers (&ge;70%)</strong> at your university first, then beyond.</p>
+                                @endif
+                                <p>Only students who opted into the peer network appear. Your data is never shared without your consent.</p>
+                            </div>
+                            @endif
                         </div>
                     </div>
                 </aside>
@@ -583,6 +642,98 @@
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    {{-- ============================================================ --}}
+    {{-- Subject Suggester Modal                                       --}}
+    {{-- ============================================================ --}}
+    <div x-show="showSuggester" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" @keydown.escape.window="showSuggester = false">
+        <div class="absolute inset-0 bg-black/40" @click="showSuggester = false"></div>
+        <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 animate-fade-in-up max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-5">
+                <h3 class="text-lg font-bold text-gray-900">How Subjects Are Ranked</h3>
+                <button @click="showSuggester = false" class="text-gray-400 hover:text-gray-600 transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            @php
+                $top = $suggestionBreakdown;
+                $explanation = '';
+                if ($top) {
+                    if ($top['mode'] === 'composite' && $top['weighted_avg_percent'] !== null) {
+                        $explanation = "<strong>{$top['subject_name']}</strong> needs attention — your <strong>{$top['weighted_avg_percent']}%</strong> average is the lowest, and you've only logged <strong>{$top['total_minutes']} min</strong> of study time.";
+                    } elseif ($top['total_minutes'] === 0) {
+                        $explanation = "You haven't studied <strong>{$top['subject_name']}</strong> yet — adding a revision session will help us track your progress.";
+                    } else {
+                        $explanation = "No marks recorded yet for <strong>{$top['subject_name']}</strong>, but you've logged <strong>{$top['total_minutes']} min</strong> — start recording marks to unlock performance insights.";
+                    }
+                }
+            @endphp
+
+            @if($explanation)
+            <div class="bg-blue-50 rounded-xl p-4 mb-5 text-sm text-gray-800 leading-relaxed">
+                {!! $explanation !!}
+            </div>
+            @endif
+
+            @if(!empty($allSubjectScores))
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b border-gray-200">
+                            <th class="text-left pb-2 text-xs font-bold text-gray-400 uppercase tracking-wider w-8">#</th>
+                            <th class="text-left pb-2 text-xs font-bold text-gray-400 uppercase tracking-wider">Subject</th>
+                            <th class="text-right pb-2 text-xs font-bold text-gray-400 uppercase tracking-wider">Min Logged</th>
+                            <th class="text-right pb-2 text-xs font-bold text-gray-400 uppercase tracking-wider">Avg %</th>
+                            <th class="text-right pb-2 text-xs font-bold text-gray-400 uppercase tracking-wider">Score</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($allSubjectScores as $i => $s)
+                        <tr class="border-b border-gray-50 {{ $i === 0 ? 'bg-blue-50/50' : '' }}">
+                            <td class="py-2.5 text-gray-500 font-mono text-xs">{{ $i + 1 }}</td>
+                            <td class="py-2.5">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: {{ $s['color_code'] }}"></div>
+                                    <span class="font-medium text-gray-900 {{ $i === 0 ? 'font-bold' : '' }}">{{ $s['subject_name'] }}</span>
+                                </div>
+                            </td>
+                            <td class="py-2.5 text-right text-gray-600 font-mono text-xs">{{ $s['total_minutes'] }}</td>
+                            <td class="py-2.5 text-right font-mono text-xs {{ $s['weighted_avg_percent'] !== null ? ($s['weighted_avg_percent'] >= 70 ? 'text-emerald-600' : ($s['weighted_avg_percent'] >= 50 ? 'text-amber-600' : 'text-red-500')) : 'text-gray-400' }}">
+                                {{ $s['weighted_avg_percent'] !== null ? $s['weighted_avg_percent'] . '%' : '—' }}
+                            </td>
+                            <td class="py-2.5 text-right font-mono text-xs font-bold {{ $i === 0 ? 'text-blue-600' : 'text-gray-500' }}">{{ number_format($s['priority_score'], 2) }}</td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+            <div x-data="{ showHow: false }" class="mt-5">
+                <button @click="showHow = !showHow" class="flex items-center gap-1 text-xs text-gray-500 hover:text-blue-600 transition font-medium">
+                    <svg class="w-3.5 h-3.5" :class="{ 'rotate-90': showHow }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                    How does this work?
+                </button>
+                <div x-show="showHow" x-collapse class="mt-3 text-xs text-gray-500 leading-relaxed space-y-2">
+                    <p>Each subject is scored on two dimensions:</p>
+                    <ul class="list-disc pl-4 space-y-1">
+                        <li><strong class="text-gray-700">Neglect score</strong> — how little you've studied it compared to your most-studied subject (0 = most studied, 1 = not studied at all).</li>
+                        <li><strong class="text-gray-700">Underperformance score</strong> — how low your marks are (0 = perfect score, 1 = no marks).</li>
+                    </ul>
+                    <p>These are averaged equally to produce a <strong class="text-gray-700">priority score</strong>. The subject with the highest priority score is recommended as your "Study Next."</p>
+                </div>
+            </div>
+            @else
+            <div class="text-center py-6">
+                <p class="text-sm text-gray-400">Add subjects to see how they rank.</p>
+            </div>
+            @endif
         </div>
     </div>
 

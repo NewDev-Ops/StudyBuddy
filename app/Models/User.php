@@ -55,7 +55,7 @@ class User extends Authenticatable
 
     public ?array $suggestionBreakdown = null;
 
-    public function suggestedSubject(): ?Subject
+    public function subjectScores(): array
     {
         $subjects = $this->subjects()
             ->leftJoin('revision_sessions', 'subjects.id', '=', 'revision_sessions.subject_id')
@@ -73,8 +73,7 @@ class User extends Authenticatable
             ->get();
 
         if ($subjects->isEmpty()) {
-            $this->suggestionBreakdown = null;
-            return null;
+            return [];
         }
 
         $subjectIds = $subjects->pluck('id');
@@ -127,7 +126,8 @@ class User extends Authenticatable
                       + ($underperformanceScore * $performanceWeight);
 
             $scored[] = [
-                'subject'                => $subject,
+                'subject_name'           => $subject->name,
+                'color_code'             => $subject->color_code,
                 'neglect_score'          => round($neglectScore, 4),
                 'underperformance_score' => round($underperformanceScore, 4),
                 'priority_score'         => round($priority, 4),
@@ -138,12 +138,26 @@ class User extends Authenticatable
         }
 
         usort($scored, fn($a, $b) => $b['priority_score'] <=> $a['priority_score']
-            ?: $a['subject']->name <=> $b['subject']->name);
+            ?: $a['subject_name'] <=> $b['subject_name']);
+
+        return $scored;
+    }
+
+    public function suggestedSubject(): ?Subject
+    {
+        $scored = $this->subjectScores();
+
+        if (empty($scored)) {
+            $this->suggestionBreakdown = null;
+            return null;
+        }
 
         $best = $scored[0];
 
+        $subject = $this->subjects()->where('name', $best['subject_name'])->first();
+
         $this->suggestionBreakdown = [
-            'subject_name'           => $best['subject']->name,
+            'subject_name'           => $best['subject_name'],
             'neglect_score'          => $best['neglect_score'],
             'underperformance_score' => $best['underperformance_score'],
             'priority_score'         => $best['priority_score'],
@@ -152,6 +166,6 @@ class User extends Authenticatable
             'weighted_avg_percent'   => $best['weighted_avg_percent'],
         ];
 
-        return $best['subject'];
+        return $subject;
     }
 }

@@ -33,6 +33,7 @@ class StudentDashboardController extends Controller
             ->limit(10)
             ->get();
 
+        $allSubjectScores = $user->subjectScores();
         $suggestedSubject = $user->suggestedSubject();
         $suggestionBreakdown = $user->suggestionBreakdown;
 
@@ -88,6 +89,6 @@ class StudentDashboardController extends Controller
             ]);
         }
 
-        return view('dashboard', compact('subjects', 'university', 'recentSessions', 'recentMarks', 'suggestedSubject', 'suggestionBreakdown', 'recommendedResources', 'peerSuggestions', 'peerComparisonMode'));
+        return view('dashboard', compact('subjects', 'university', 'recentSessions', 'recentMarks', 'suggestedSubject', 'suggestionBreakdown', 'recommendedResources', 'peerSuggestions', 'peerComparisonMode', 'allSubjectScores'));
     }
 }
