@@ -29,6 +29,15 @@
                     <span class="absolute -top-2 -right-4 bg-gradient-to-r from-blue-600 to-blue-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center leading-tight shadow-sm">{{ $msgCount > 99 ? '99+' : $msgCount }}</span>
                 @endif
             </a>
+            <a href="{{ route('notifications.index') }}"
+                class="text-sm text-gray-500 hover:text-gray-900 {{ request()->routeIs('notifications.*') ? 'font-semibold text-blue-600' : '' }} transition-colors relative group">
+                Notifications
+                <span class="absolute -bottom-1 left-0 right-0 h-0.5 bg-blue-600 rounded-full scale-x-0 {{ request()->routeIs('notifications.*') ? 'scale-x-100' : 'group-hover:scale-x-100' }} transition-transform origin-left"></span>
+                @php $reqCount = \App\Models\ConnectRequest::where('receiver_id', Auth::id())->where('status', 'pending')->count(); @endphp
+                @if($reqCount > 0)
+                    <span class="absolute -top-2 -right-4 bg-gradient-to-r from-amber-500 to-amber-400 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center leading-tight shadow-sm">{{ $reqCount > 99 ? '99+' : $reqCount }}</span>
+                @endif
+            </a>
             <a href="{{ route('study-wrapped') }}"
                 class="text-sm text-gray-500 hover:text-gray-900 {{ request()->routeIs('study-wrapped') ? 'font-semibold text-blue-600' : '' }} transition-colors relative group">
                 Study Wrapped
@@ -83,6 +92,14 @@
                 @php $msgCount = \App\Models\Message::where('receiver_id', Auth::id())->whereNull('read_at')->count(); @endphp
                 @if($msgCount > 0)
                     <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-white text-[10px] font-bold ml-1">{{ $msgCount > 99 ? '99+' : $msgCount }}</span>
+                @endif
+            </a>
+            <a href="{{ route('notifications.index') }}"
+                class="block py-2 text-sm {{ request()->routeIs('notifications.*') ? 'font-semibold text-blue-600' : 'text-gray-600' }}">
+                Notifications
+                @php $reqCount = \App\Models\ConnectRequest::where('receiver_id', Auth::id())->where('status', 'pending')->count(); @endphp
+                @if($reqCount > 0)
+                    <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-500 text-white text-[10px] font-bold ml-1">{{ $reqCount > 99 ? '99+' : $reqCount }}</span>
                 @endif
             </a>
             <a href="{{ route('study-wrapped') }}"

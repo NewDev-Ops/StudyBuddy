@@ -71,6 +71,8 @@ Route::middleware(['auth', 'onboarding', 'throttle:120,1'])->group(function () {
     Route::delete('/chat-requests/{connectRequest}', [\App\Http\Controllers\ChatRequestController::class, 'cancel'])->name('chat-requests.cancel');
     Route::get('/chat-requests/pending', [\App\Http\Controllers\ChatRequestController::class, 'pending'])->name('chat-requests.pending');
 
+    Route::get('/notifications', [\App\Http\Controllers\NotificationsController::class, 'index'])->name('notifications.index');
+
     Route::get('/report/student', [\App\Http\Controllers\ReportController::class, 'student'])->name('report.student');
 });
 
