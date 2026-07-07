@@ -1,5 +1,5 @@
 <x-app-layout>
-    <div class="py-8" x-data="{ showConfirm: false, confirmAction: '', confirmLabel: '', showSuggester: false }" @open-suggester="showSuggester = true">
+    <div class="py-8" x-data="{ showConfirm: false, confirmAction: '', confirmLabel: '', showSuggester: false }">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
@@ -16,7 +16,7 @@
                             </svg>
                             <h3 class="text-sm font-bold text-gray-900">Study Next</h3>
                             @if(!empty($allSubjectScores))
-                            <button @click="$dispatch('open-suggester')" class="ml-auto text-gray-400 hover:text-blue-600 transition" title="Why this suggestion?">
+                            <button @click="showSuggester = true" class="ml-auto text-gray-400 hover:text-blue-600 transition" title="Why this suggestion?">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                 </svg>
@@ -384,6 +384,99 @@
 
             </div>
         </div>
+
+    {{-- ============================================================ --}}
+    {{-- Subject Suggester Modal                                       --}}
+    {{-- ============================================================ --}}
+    <div x-show="showSuggester" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" @keydown.escape.window="showSuggester = false">
+        <div class="absolute inset-0 bg-black/40" @click="showSuggester = false"></div>
+        <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 animate-fade-in-up max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-5">
+                <h3 class="text-lg font-bold text-gray-900">How Subjects Are Ranked</h3>
+                <button @click="showSuggester = false" class="text-gray-400 hover:text-gray-600 transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            @php
+                $top = $suggestionBreakdown;
+                $explanation = '';
+                if ($top) {
+                    if ($top['mode'] === 'composite' && $top['weighted_avg_percent'] !== null) {
+                        $explanation = "<strong>{$top['subject_name']}</strong> needs attention — your <strong>{$top['weighted_avg_percent']}%</strong> average is the lowest, and you've only logged <strong>{$top['total_minutes']} min</strong> of study time.";
+                    } elseif ($top['total_minutes'] === 0) {
+                        $explanation = "You haven't studied <strong>{$top['subject_name']}</strong> yet — adding a revision session will help us track your progress.";
+                    } else {
+                        $explanation = "No marks recorded yet for <strong>{$top['subject_name']}</strong>, but you've logged <strong>{$top['total_minutes']} min</strong> — start recording marks to unlock performance insights.";
+                    }
+                }
+            @endphp
+
+            @if($explanation)
+            <div class="bg-blue-50 rounded-xl p-4 mb-5 text-sm text-gray-800 leading-relaxed">
+                {!! $explanation !!}
+            </div>
+            @endif
+
+            @if(!empty($allSubjectScores))
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b border-gray-200">
+                            <th class="text-left pb-2 text-xs font-bold text-gray-400 uppercase tracking-wider w-8">#</th>
+                            <th class="text-left pb-2 text-xs font-bold text-gray-400 uppercase tracking-wider">Subject</th>
+                            <th class="text-right pb-2 text-xs font-bold text-gray-400 uppercase tracking-wider">Min Logged</th>
+                            <th class="text-right pb-2 text-xs font-bold text-gray-400 uppercase tracking-wider">Avg %</th>
+                            <th class="text-right pb-2 text-xs font-bold text-gray-400 uppercase tracking-wider">Score</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($allSubjectScores as $i => $s)
+                        <tr class="border-b border-gray-50 {{ $i === 0 ? 'bg-blue-50/50' : '' }}">
+                            <td class="py-2.5 text-gray-500 font-mono text-xs">{{ $i + 1 }}</td>
+                            <td class="py-2.5">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: {{ $s['color_code'] }}"></div>
+                                    <span class="font-medium text-gray-900 {{ $i === 0 ? 'font-bold' : '' }}">{{ $s['subject_name'] }}</span>
+                                </div>
+                            </td>
+                            <td class="py-2.5 text-right text-gray-600 font-mono text-xs">{{ $s['total_minutes'] }}</td>
+                            <td class="py-2.5 text-right font-mono text-xs {{ $s['weighted_avg_percent'] !== null ? ($s['weighted_avg_percent'] >= 70 ? 'text-emerald-600' : ($s['weighted_avg_percent'] >= 50 ? 'text-amber-600' : 'text-red-500')) : 'text-gray-400' }}">
+                                {{ $s['weighted_avg_percent'] !== null ? $s['weighted_avg_percent'] . '%' : '—' }}
+                            </td>
+                            <td class="py-2.5 text-right font-mono text-xs font-bold {{ $i === 0 ? 'text-blue-600' : 'text-gray-500' }}">{{ number_format($s['priority_score'], 2) }}</td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+            <div x-data="{ showHow: false }" class="mt-5">
+                <button @click="showHow = !showHow" class="flex items-center gap-1 text-xs text-gray-500 hover:text-blue-600 transition font-medium">
+                    <svg class="w-3.5 h-3.5" :class="{ 'rotate-90': showHow }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                    How does this work?
+                </button>
+                <div x-show="showHow" x-collapse class="mt-3 text-xs text-gray-500 leading-relaxed space-y-2">
+                    <p>Each subject is scored on two dimensions:</p>
+                    <ul class="list-disc pl-4 space-y-1">
+                        <li><strong class="text-gray-700">Neglect score</strong> — how little you've studied it compared to your most-studied subject (0 = most studied, 1 = not studied at all).</li>
+                        <li><strong class="text-gray-700">Underperformance score</strong> — how low your marks are (0 = perfect score, 1 = no marks).</li>
+                    </ul>
+                    <p>These are averaged equally to produce a <strong class="text-gray-700">priority score</strong>. The subject with the highest priority score is recommended as your "Study Next."</p>
+                </div>
+            </div>
+            @else
+            <div class="text-center py-6">
+                <p class="text-sm text-gray-400">Add subjects to see how they rank.</p>
+            </div>
+            @endif
+        </div>
+    </div>
+
     </div>
 
     {{-- ============================================================ --}}
@@ -642,98 +735,6 @@
                     </button>
                 </div>
             </form>
-        </div>
-    </div>
-
-    {{-- ============================================================ --}}
-    {{-- Subject Suggester Modal                                       --}}
-    {{-- ============================================================ --}}
-    <div x-show="showSuggester" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" @keydown.escape.window="showSuggester = false">
-        <div class="absolute inset-0 bg-black/40" @click="showSuggester = false"></div>
-        <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 animate-fade-in-up max-h-[90vh] overflow-y-auto">
-            <div class="flex items-center justify-between mb-5">
-                <h3 class="text-lg font-bold text-gray-900">How Subjects Are Ranked</h3>
-                <button @click="showSuggester = false" class="text-gray-400 hover:text-gray-600 transition">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
-                </button>
-            </div>
-
-            @php
-                $top = $suggestionBreakdown;
-                $explanation = '';
-                if ($top) {
-                    if ($top['mode'] === 'composite' && $top['weighted_avg_percent'] !== null) {
-                        $explanation = "<strong>{$top['subject_name']}</strong> needs attention — your <strong>{$top['weighted_avg_percent']}%</strong> average is the lowest, and you've only logged <strong>{$top['total_minutes']} min</strong> of study time.";
-                    } elseif ($top['total_minutes'] === 0) {
-                        $explanation = "You haven't studied <strong>{$top['subject_name']}</strong> yet — adding a revision session will help us track your progress.";
-                    } else {
-                        $explanation = "No marks recorded yet for <strong>{$top['subject_name']}</strong>, but you've logged <strong>{$top['total_minutes']} min</strong> — start recording marks to unlock performance insights.";
-                    }
-                }
-            @endphp
-
-            @if($explanation)
-            <div class="bg-blue-50 rounded-xl p-4 mb-5 text-sm text-gray-800 leading-relaxed">
-                {!! $explanation !!}
-            </div>
-            @endif
-
-            @if(!empty($allSubjectScores))
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm">
-                    <thead>
-                        <tr class="border-b border-gray-200">
-                            <th class="text-left pb-2 text-xs font-bold text-gray-400 uppercase tracking-wider w-8">#</th>
-                            <th class="text-left pb-2 text-xs font-bold text-gray-400 uppercase tracking-wider">Subject</th>
-                            <th class="text-right pb-2 text-xs font-bold text-gray-400 uppercase tracking-wider">Min Logged</th>
-                            <th class="text-right pb-2 text-xs font-bold text-gray-400 uppercase tracking-wider">Avg %</th>
-                            <th class="text-right pb-2 text-xs font-bold text-gray-400 uppercase tracking-wider">Score</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($allSubjectScores as $i => $s)
-                        <tr class="border-b border-gray-50 {{ $i === 0 ? 'bg-blue-50/50' : '' }}">
-                            <td class="py-2.5 text-gray-500 font-mono text-xs">{{ $i + 1 }}</td>
-                            <td class="py-2.5">
-                                <div class="flex items-center gap-2">
-                                    <div class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: {{ $s['color_code'] }}"></div>
-                                    <span class="font-medium text-gray-900 {{ $i === 0 ? 'font-bold' : '' }}">{{ $s['subject_name'] }}</span>
-                                </div>
-                            </td>
-                            <td class="py-2.5 text-right text-gray-600 font-mono text-xs">{{ $s['total_minutes'] }}</td>
-                            <td class="py-2.5 text-right font-mono text-xs {{ $s['weighted_avg_percent'] !== null ? ($s['weighted_avg_percent'] >= 70 ? 'text-emerald-600' : ($s['weighted_avg_percent'] >= 50 ? 'text-amber-600' : 'text-red-500')) : 'text-gray-400' }}">
-                                {{ $s['weighted_avg_percent'] !== null ? $s['weighted_avg_percent'] . '%' : '—' }}
-                            </td>
-                            <td class="py-2.5 text-right font-mono text-xs font-bold {{ $i === 0 ? 'text-blue-600' : 'text-gray-500' }}">{{ number_format($s['priority_score'], 2) }}</td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-
-            <div x-data="{ showHow: false }" class="mt-5">
-                <button @click="showHow = !showHow" class="flex items-center gap-1 text-xs text-gray-500 hover:text-blue-600 transition font-medium">
-                    <svg class="w-3.5 h-3.5" :class="{ 'rotate-90': showHow }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                    </svg>
-                    How does this work?
-                </button>
-                <div x-show="showHow" x-collapse class="mt-3 text-xs text-gray-500 leading-relaxed space-y-2">
-                    <p>Each subject is scored on two dimensions:</p>
-                    <ul class="list-disc pl-4 space-y-1">
-                        <li><strong class="text-gray-700">Neglect score</strong> — how little you've studied it compared to your most-studied subject (0 = most studied, 1 = not studied at all).</li>
-                        <li><strong class="text-gray-700">Underperformance score</strong> — how low your marks are (0 = perfect score, 1 = no marks).</li>
-                    </ul>
-                    <p>These are averaged equally to produce a <strong class="text-gray-700">priority score</strong>. The subject with the highest priority score is recommended as your "Study Next."</p>
-                </div>
-            </div>
-            @else
-            <div class="text-center py-6">
-                <p class="text-sm text-gray-400">Add subjects to see how they rank.</p>
-            </div>
-            @endif
         </div>
     </div>
 
