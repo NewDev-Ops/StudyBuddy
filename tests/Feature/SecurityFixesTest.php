@@ -221,4 +221,80 @@ class SecurityFixesTest extends TestCase
         // English: priority = (1.0 * 0.5) + ((1.0 - 0.35) * 0.5) = 0.5 + 0.325 = 0.825
         $this->assertEquals(0.825, $breakdown['priority_score']);
     }
+
+    // ================================================================
+    // CONNECTION REQUEST FLOW — send → receive → accept → chat
+    // ================================================================
+
+    public function test_connection_request_full_flow()
+    {
+        $sender = $this->createUserWithOnboarding(['is_opted_in' => true]);
+        $receiver = $this->createUserWithOnboarding(['is_opted_in' => true]);
+
+        // 1. Sender sends a connection request
+        $this->actingAs($sender);
+        $response = $this->postJson("/chat-requests/{$receiver->id}", []);
+        $response->assertJson(['success' => true]);
+
+        // 2. Verify the ConnectRequest was created in the DB
+        $this->assertDatabaseHas('connect_requests', [
+            'sender_id' => $sender->id,
+            'receiver_id' => $receiver->id,
+            'status' => 'pending',
+        ]);
+
+        $connectRequest = ConnectRequest::where('sender_id', $sender->id)
+            ->where('receiver_id', $receiver->id)
+            ->first();
+
+        $this->assertNotNull($connectRequest);
+        $this->assertEquals('pending', $connectRequest->status);
+
+        // 3. Verify receiver can see the pending request on their dashboard
+        $this->actingAs($receiver);
+        $dashboardResponse = $this->get('/dashboard');
+        $dashboardResponse->assertStatus(200);
+        $dashboardResponse->assertSee($sender->name);
+
+        // 4. Verify receiver can see the pending request via the pending API
+        $pendingResponse = $this->getJson('/chat-requests/pending');
+        $pendingResponse->assertJson([
+            'incoming' => [
+                ['id' => $connectRequest->id],
+            ],
+        ]);
+
+        // 5. Verify sender sees pending_sent on the messages/show page
+        $this->actingAs($sender);
+        $showResponse = $this->get("/messages/{$receiver->id}");
+        $showResponse->assertStatus(200);
+        $showResponse->assertSee('Request Sent');
+
+        // 6. Receiver accepts the request
+        $this->actingAs($receiver);
+        $acceptResponse = $this->patchJson("/chat-requests/{$connectRequest->id}/accept");
+        $acceptResponse->assertJson(['success' => true]);
+
+        // 7. Verify status changed to accepted
+        $this->assertDatabaseHas('connect_requests', [
+            'id' => $connectRequest->id,
+            'status' => 'accepted',
+        ]);
+        $this->assertNotNull($connectRequest->fresh()->responded_at);
+
+        // 8. Verify sender can now send messages
+        $this->actingAs($sender);
+        $msgResponse = $this->postJson("/messages/{$receiver->id}", [
+            'message' => 'Hello!',
+        ]);
+        $msgResponse->assertJson(['success' => true]);
+
+        // 9. Verify receiver can read the message
+        $this->actingAs($receiver);
+        $this->assertDatabaseHas('messages', [
+            'sender_id' => $sender->id,
+            'receiver_id' => $receiver->id,
+            'message' => 'Hello!',
+        ]);
+    }
 }

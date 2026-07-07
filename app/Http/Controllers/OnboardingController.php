@@ -142,10 +142,6 @@ class OnboardingController extends Controller
 
     public function complete(Request $request)
     {
-        Auth::user()->update([
-            'is_opted_in' => $request->boolean('is_opted_in'),
-        ]);
-
         return redirect()->route('dashboard');
     }
 

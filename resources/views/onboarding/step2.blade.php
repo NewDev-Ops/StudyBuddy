@@ -119,20 +119,6 @@
             <form method="POST" action="{{ route('onboarding.complete') }}">
                 @csrf
 
-                {{-- Peer Network Opt-In --}}
-                <div class="mb-5">
-                    <label class="flex items-start gap-3 cursor-pointer">
-                        {{-- Hidden field ensures a value is ALWAYS sent (0 = unchecked, 1 = checked) --}}
-                        <input type="hidden" name="is_opted_in" value="0">
-                        <input type="checkbox" name="is_opted_in" value="1"
-                            class="mt-0.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 shadow-sm">
-                        <div>
-                            <p class="text-sm font-medium text-gray-800">Join the peer network</p>
-                            <p class="text-xs text-gray-500 mt-0.5">Let other students discover you as a study partner. Only your name, university, and strong subjects are ever shown. Your marks stay private. You can change this anytime.</p>
-                        </div>
-                    </label>
-                </div>
-
                 <button type="submit"
                     class="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg transition text-sm">
                     {{ $userSubjects->isNotEmpty() ? 'Finish Setup' : 'Skip for now' }}

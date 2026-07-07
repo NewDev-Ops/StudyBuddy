@@ -65,7 +65,7 @@ Route::middleware(['auth', 'onboarding', 'throttle:120,1'])->group(function () {
     Route::get('/messages/{user}', [\App\Http\Controllers\MessageController::class, 'show'])->name('messages.show');
 
     // Chat request routes
-    Route::post('/chat-requests/{user}', [\App\Http\Controllers\ChatRequestController::class, 'send'])->name('chat-requests.send');
+    Route::post('/chat-requests/{receiver}', [\App\Http\Controllers\ChatRequestController::class, 'send'])->name('chat-requests.send');
     Route::patch('/chat-requests/{connectRequest}/accept', [\App\Http\Controllers\ChatRequestController::class, 'accept'])->name('chat-requests.accept');
     Route::patch('/chat-requests/{connectRequest}/reject', [\App\Http\Controllers\ChatRequestController::class, 'reject'])->name('chat-requests.reject');
     Route::delete('/chat-requests/{connectRequest}', [\App\Http\Controllers\ChatRequestController::class, 'cancel'])->name('chat-requests.cancel');
