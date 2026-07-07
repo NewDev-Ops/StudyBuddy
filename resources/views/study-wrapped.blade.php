@@ -46,37 +46,42 @@
                     <div class="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
                         <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-blue-50 to-transparent rounded-bl-full"></div>
                     </div>
-                    <div class="relative z-10 flex items-center gap-3 mb-4">
-                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-sm">
-                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-                            </svg>
-                        </div>
-                        <div class="flex-1">
-                            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Most Studied</p>
-                            @if($wrapped->most_studied_subject)
-                            <p class="text-lg font-bold text-gray-900">{{ $wrapped->most_studied_subject }}</p>
-                            @else
-                            <p class="text-sm text-gray-400">Not enough data yet</p>
-                            @endif
-                        </div>
-                        <div class="relative z-20">
-                            <button @mouseenter="showTip = true" @mouseleave="showTip = false" @touchstart.prevent="showTip = !showTip" class="text-gray-300 hover:text-blue-600 transition">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    <div class="relative z-10">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-sm">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
                                 </svg>
-                            </button>
-                            <div x-show="showTip" x-cloak @click.away="showTip = false" class="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 p-3.5 text-[11px] text-gray-600 leading-relaxed z-30">
-                                @if($wrapped->most_studied_subject)
-                                <p>You spent <strong class="text-gray-900">{{ $mostStudiedMinutes }} min</strong> on <strong class="text-gray-900">{{ $wrapped->most_studied_subject }}</strong> this year — more than any other subject.</p>
-                                @if($sessionCount > 0)
-                                <p class="mt-1.5">Across <strong class="text-gray-900">{{ $sessionCount }} session{{ $sessionCount !== 1 ? 's' : '' }}</strong>, averaging <strong class="text-gray-900">{{ $avgSessionLength }} min</strong> per session.</p>
-                                @endif
-                                @else
-                                <p>Log revision sessions to see your most-studied subject.</p>
-                                @endif
-                                <div class="absolute -top-1 right-4 w-2 h-2 bg-white border-l border-t border-gray-100 rotate-45"></div>
                             </div>
+                            <div class="flex-1">
+                                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Most Studied</p>
+                                @if($wrapped->most_studied_subject)
+                                <p class="text-lg font-bold text-gray-900">{{ $wrapped->most_studied_subject }}</p>
+                                @else
+                                <p class="text-sm text-gray-400">Not enough data yet</p>
+                                @endif
+                            </div>
+                            <div class="relative shrink-0"
+                                 @mouseenter="showTip = true" @mouseleave="showTip = false" @touchstart.prevent="showTip = !showTip">
+                                <button class="text-gray-300 hover:text-blue-600 transition">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div x-show="showTip" x-cloak @click.away="showTip = false"
+                             @mouseenter="showTip = true" @mouseleave="showTip = false"
+                             class="relative bg-white rounded-xl shadow-xl border border-gray-100 p-3.5 text-[11px] text-gray-600 leading-relaxed">
+                            @if($wrapped->most_studied_subject)
+                            <p>You spent <strong class="text-gray-900">{{ $mostStudiedMinutes }} min</strong> on <strong class="text-gray-900">{{ $wrapped->most_studied_subject }}</strong> this year — more than any other subject.</p>
+                            @if($sessionCount > 0)
+                            <p class="mt-1.5">Across <strong class="text-gray-900">{{ $sessionCount }} session{{ $sessionCount !== 1 ? 's' : '' }}</strong>, averaging <strong class="text-gray-900">{{ $avgSessionLength }} min</strong> per session.</p>
+                            @endif
+                            @else
+                            <p>Log revision sessions to see your most-studied subject.</p>
+                            @endif
+                            <div class="absolute -top-1 right-4 w-2 h-2 bg-white border-l border-t border-gray-100 rotate-45"></div>
                         </div>
                     </div>
                 </div>
@@ -87,37 +92,42 @@
                     <div class="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
                         <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-amber-50 to-transparent rounded-bl-full"></div>
                     </div>
-                    <div class="relative z-10 flex items-center gap-3 mb-4">
-                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center shadow-sm">
-                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
-                            </svg>
-                        </div>
-                        <div class="flex-1">
-                            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Most Neglected</p>
-                            @if($wrapped->most_neglected_subject)
-                            <p class="text-lg font-bold text-gray-900">{{ $wrapped->most_neglected_subject }}</p>
-                            @else
-                            <p class="text-sm text-gray-400">Not enough data yet</p>
-                            @endif
-                        </div>
-                        <div class="relative z-20">
-                            <button @mouseenter="showTip = true" @mouseleave="showTip = false" @touchstart.prevent="showTip = !showTip" class="text-gray-300 hover:text-amber-600 transition">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    <div class="relative z-10">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center shadow-sm">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
                                 </svg>
-                            </button>
-                            <div x-show="showTip" x-cloak @click.away="showTip = false" class="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 p-3.5 text-[11px] text-gray-600 leading-relaxed z-30">
-                                @if($wrapped->most_neglected_subject)
-                                <p><strong class="text-gray-900">{{ $wrapped->most_neglected_subject }}</strong> received the least study time with only <strong class="text-gray-900">{{ $mostNeglectedMinutes }} min</strong> logged all year.</p>
-                                @if($mostStudiedMinutes > 0)
-                                <p class="mt-1.5">That's <strong class="text-gray-900">{{ $mostStudiedMinutes > 0 ? round((1 - $mostNeglectedMinutes / max($mostStudiedMinutes, 1)) * 100) : 0 }}%</strong> less than your most-studied subject.</p>
-                                @endif
-                                @else
-                                <p>Add at least two subjects and log sessions to see which one needs more attention.</p>
-                                @endif
-                                <div class="absolute -top-1 right-4 w-2 h-2 bg-white border-l border-t border-gray-100 rotate-45"></div>
                             </div>
+                            <div class="flex-1">
+                                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Most Neglected</p>
+                                @if($wrapped->most_neglected_subject)
+                                <p class="text-lg font-bold text-gray-900">{{ $wrapped->most_neglected_subject }}</p>
+                                @else
+                                <p class="text-sm text-gray-400">Not enough data yet</p>
+                                @endif
+                            </div>
+                            <div class="relative shrink-0"
+                                 @mouseenter="showTip = true" @mouseleave="showTip = false" @touchstart.prevent="showTip = !showTip">
+                                <button class="text-gray-300 hover:text-amber-600 transition">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div x-show="showTip" x-cloak @click.away="showTip = false"
+                             @mouseenter="showTip = true" @mouseleave="showTip = false"
+                             class="relative bg-white rounded-xl shadow-xl border border-gray-100 p-3.5 text-[11px] text-gray-600 leading-relaxed">
+                            @if($wrapped->most_neglected_subject)
+                            <p><strong class="text-gray-900">{{ $wrapped->most_neglected_subject }}</strong> received the least study time with only <strong class="text-gray-900">{{ $mostNeglectedMinutes }} min</strong> logged all year.</p>
+                            @if($mostStudiedMinutes > 0)
+                            <p class="mt-1.5">That's <strong class="text-gray-900">{{ $mostStudiedMinutes > 0 ? round((1 - $mostNeglectedMinutes / max($mostStudiedMinutes, 1)) * 100) : 0 }}%</strong> less than your most-studied subject.</p>
+                            @endif
+                            @else
+                            <p>Add at least two subjects and log sessions to see which one needs more attention.</p>
+                            @endif
+                            <div class="absolute -top-1 right-4 w-2 h-2 bg-white border-l border-t border-gray-100 rotate-45"></div>
                         </div>
                     </div>
                 </div>
@@ -128,37 +138,42 @@
                     <div class="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
                         <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-emerald-50 to-transparent rounded-bl-full"></div>
                     </div>
-                    <div class="relative z-10 flex items-center gap-3 mb-4">
-                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-sm">
-                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
-                            </svg>
-                        </div>
-                        <div class="flex-1">
-                            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Highest Performing</p>
-                            @if($wrapped->highest_performing_subject)
-                            <p class="text-lg font-bold text-gray-900">{{ $wrapped->highest_performing_subject }}</p>
-                            @else
-                            <p class="text-sm text-gray-400">No marks recorded yet</p>
-                            @endif
-                        </div>
-                        <div class="relative z-20">
-                            <button @mouseenter="showTip = true" @mouseleave="showTip = false" @touchstart.prevent="showTip = !showTip" class="text-gray-300 hover:text-emerald-600 transition">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    <div class="relative z-10">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-sm">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
                                 </svg>
-                            </button>
-                            <div x-show="showTip" x-cloak @click.away="showTip = false" class="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 p-3.5 text-[11px] text-gray-600 leading-relaxed z-30">
-                                @if($wrapped->highest_performing_subject)
-                                <p>Your highest average score this year, calculated from all exams, tests, and assignments.</p>
-                                @if($overallPerformance)
-                                <p class="mt-1.5">Your overall average across all subjects is <strong class="text-gray-900">{{ number_format($overallPerformance, 1) }}%</strong>.</p>
-                                @endif
-                                @else
-                                <p>Record marks to find out which subject you're performing best in.</p>
-                                @endif
-                                <div class="absolute -top-1 right-4 w-2 h-2 bg-white border-l border-t border-gray-100 rotate-45"></div>
                             </div>
+                            <div class="flex-1">
+                                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Highest Performing</p>
+                                @if($wrapped->highest_performing_subject)
+                                <p class="text-lg font-bold text-gray-900">{{ $wrapped->highest_performing_subject }}</p>
+                                @else
+                                <p class="text-sm text-gray-400">No marks recorded yet</p>
+                                @endif
+                            </div>
+                            <div class="relative shrink-0"
+                                 @mouseenter="showTip = true" @mouseleave="showTip = false" @touchstart.prevent="showTip = !showTip">
+                                <button class="text-gray-300 hover:text-emerald-600 transition">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div x-show="showTip" x-cloak @click.away="showTip = false"
+                             @mouseenter="showTip = true" @mouseleave="showTip = false"
+                             class="relative bg-white rounded-xl shadow-xl border border-gray-100 p-3.5 text-[11px] text-gray-600 leading-relaxed">
+                            @if($wrapped->highest_performing_subject)
+                            <p>Your highest average score this year, calculated from all exams, tests, and assignments.</p>
+                            @if($overallPerformance)
+                            <p class="mt-1.5">Your overall average across all subjects is <strong class="text-gray-900">{{ number_format($overallPerformance, 1) }}%</strong>.</p>
+                            @endif
+                            @else
+                            <p>Record marks to find out which subject you're performing best in.</p>
+                            @endif
+                            <div class="absolute -top-1 right-4 w-2 h-2 bg-white border-l border-t border-gray-100 rotate-45"></div>
                         </div>
                     </div>
                 </div>
@@ -169,33 +184,38 @@
                     <div class="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
                         <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-purple-50 to-transparent rounded-bl-full"></div>
                     </div>
-                    <div class="relative z-10 flex items-center gap-3 mb-4">
-                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-sm">
-                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
-                        </div>
-                        <div class="flex-1">
-                            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Revision Hours</p>
-                            <p class="text-lg font-bold text-gray-900">
-                                {{ $wrapped->total_hours > 0 ? number_format($wrapped->total_hours, 1) . ' hrs' : 'No sessions logged yet' }}
-                            </p>
-                        </div>
-                        <div class="relative z-20">
-                            <button @mouseenter="showTip = true" @mouseleave="showTip = false" @touchstart.prevent="showTip = !showTip" class="text-gray-300 hover:text-purple-600 transition">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    <div class="relative z-10">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-sm">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                 </svg>
-                            </button>
-                            <div x-show="showTip" x-cloak @click.away="showTip = false" class="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 p-3.5 text-[11px] text-gray-600 leading-relaxed z-30">
-                                @if($wrapped->total_hours > 0)
-                                <p>You logged <strong class="text-gray-900">{{ number_format($wrapped->total_hours, 1) }} hours</strong> across <strong class="text-gray-900">{{ $sessionCount }} session{{ $sessionCount !== 1 ? 's' : '' }}</strong> this year.</p>
-                                <p class="mt-1.5">Average session length: <strong class="text-gray-900">{{ $avgSessionLength }} min</strong>.</p>
-                                @else
-                                <p>Log your first revision session to start tracking your study hours.</p>
-                                @endif
-                                <div class="absolute -top-1 right-4 w-2 h-2 bg-white border-l border-t border-gray-100 rotate-45"></div>
                             </div>
+                            <div class="flex-1">
+                                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Revision Hours</p>
+                                <p class="text-lg font-bold text-gray-900">
+                                    {{ $wrapped->total_hours > 0 ? number_format($wrapped->total_hours, 1) . ' hrs' : 'No sessions logged yet' }}
+                                </p>
+                            </div>
+                            <div class="relative shrink-0"
+                                 @mouseenter="showTip = true" @mouseleave="showTip = false" @touchstart.prevent="showTip = !showTip">
+                                <button class="text-gray-300 hover:text-purple-600 transition">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div x-show="showTip" x-cloak @click.away="showTip = false"
+                             @mouseenter="showTip = true" @mouseleave="showTip = false"
+                             class="relative bg-white rounded-xl shadow-xl border border-gray-100 p-3.5 text-[11px] text-gray-600 leading-relaxed">
+                            @if($wrapped->total_hours > 0)
+                            <p>You logged <strong class="text-gray-900">{{ number_format($wrapped->total_hours, 1) }} hours</strong> across <strong class="text-gray-900">{{ $sessionCount }} session{{ $sessionCount !== 1 ? 's' : '' }}</strong> this year.</p>
+                            <p class="mt-1.5">Average session length: <strong class="text-gray-900">{{ $avgSessionLength }} min</strong>.</p>
+                            @else
+                            <p>Log your first revision session to start tracking your study hours.</p>
+                            @endif
+                            <div class="absolute -top-1 right-4 w-2 h-2 bg-white border-l border-t border-gray-100 rotate-45"></div>
                         </div>
                     </div>
                 </div>
