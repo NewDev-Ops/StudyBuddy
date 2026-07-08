@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ConnectRequest;
 use App\Models\Message;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -52,32 +53,87 @@ class MessageController extends Controller
     {
         $currentUser = Auth::user();
 
-        if ($user->id === $currentUser->id) {
-            return redirect()->route('messages.index');
-        }
+        $this->ensureParticipant($user, $currentUser);
 
-        Message::where('sender_id', $user->id)
-            ->where('receiver_id', $currentUser->id)
-            ->whereNull('read_at')
-            ->update(['read_at' => now()]);
-
-        $messages = Message::where(function ($q) use ($currentUser, $user) {
+        $hasMessages = Message::where(function ($q) use ($currentUser, $user) {
                 $q->where('sender_id', $currentUser->id)->where('receiver_id', $user->id);
             })->orWhere(function ($q) use ($currentUser, $user) {
                 $q->where('sender_id', $user->id)->where('receiver_id', $currentUser->id);
-            })
-            ->orderBy('created_at', 'asc')
-            ->get();
+            })->exists();
 
-        return view('messages.show', compact('messages', 'user'));
+        if ($hasMessages) {
+            Message::where('sender_id', $user->id)
+                ->where('receiver_id', $currentUser->id)
+                ->whereNull('read_at')
+                ->update(['read_at' => now()]);
+
+            $messages = Message::where(function ($q) use ($currentUser, $user) {
+                    $q->where('sender_id', $currentUser->id)->where('receiver_id', $user->id);
+                })->orWhere(function ($q) use ($currentUser, $user) {
+                    $q->where('sender_id', $user->id)->where('receiver_id', $currentUser->id);
+                })
+                ->orderBy('created_at', 'asc')
+                ->get();
+
+            return view('messages.show', compact('messages', 'user'));
+        }
+
+        // No existing conversation — determine connection status
+        $request = ConnectRequest::between($currentUser, $user)
+            ->latest()
+            ->first();
+
+        $connectionStatus = 'none';
+        $connectRequest = null;
+
+        if ($request) {
+            if ($request->status === 'accepted') {
+                $connectionStatus = 'accepted';
+            } elseif ($request->status === 'pending' && $request->sender_id === $currentUser->id) {
+                $connectionStatus = 'pending_sent';
+                $connectRequest = $request;
+            } elseif ($request->status === 'pending' && $request->receiver_id === $currentUser->id) {
+                $connectionStatus = 'pending_received';
+                $connectRequest = $request;
+            } elseif ($request->status === 'rejected' && $request->sender_id === $currentUser->id) {
+                $connectionStatus = 'rejected';
+                $connectRequest = $request;
+            }
+        }
+
+        return view('messages.show', [
+            'messages' => collect(),
+            'user' => $user,
+            'connectionStatus' => $connectionStatus,
+            'connectRequest' => $connectRequest,
+        ]);
     }
 
     public function store(Request $request, User $user)
     {
         $currentUser = Auth::user();
 
-        if ($user->id === $currentUser->id) {
-            return response()->json(['error' => 'Cannot message yourself.'], 422);
+        // Participant check: block self-messaging
+        $this->ensureParticipant($user, $currentUser);
+
+        $isExistingConversation = Message::where(function ($q) use ($currentUser, $user) {
+                $q->where('sender_id', $currentUser->id)
+                  ->where('receiver_id', $user->id);
+            })->orWhere(function ($q) use ($currentUser, $user) {
+                $q->where('sender_id', $user->id)
+                  ->where('receiver_id', $currentUser->id);
+            })->exists();
+
+        if (!$isExistingConversation) {
+            $hasAcceptedRequest = ConnectRequest::between($currentUser, $user)
+                ->accepted()
+                ->exists();
+
+            if (!$hasAcceptedRequest) {
+                return response()->json([
+                    'error' => 'You must send a connection request first. The recipient must accept before you can start chatting.'
+                ], 422);
+            }
         }
 
         $data = $request->validate([
@@ -96,6 +152,27 @@ class MessageController extends Controller
             'success' => true,
             'message' => $message,
         ]);
+    }
+
+    private function ensureParticipant(User $otherUser, User $currentUser, bool $requireExistingConversation = false): void
+    {
+        if ($otherUser->id === $currentUser->id) {
+            abort(403, 'Cannot message yourself.');
+        }
+
+        if ($requireExistingConversation) {
+            $isParticipant = Message::where(function ($q) use ($currentUser, $otherUser) {
+                    $q->where('sender_id', $currentUser->id)
+                      ->where('receiver_id', $otherUser->id);
+                })->orWhere(function ($q) use ($currentUser, $otherUser) {
+                    $q->where('sender_id', $otherUser->id)
+                      ->where('receiver_id', $currentUser->id);
+                })->exists();
+
+            if (!$isParticipant) {
+                abort(403, 'You are not a participant in this conversation.');
+            }
+        }
     }
 
     public function unreadCount()

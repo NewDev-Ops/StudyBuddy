@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Mark extends Model
 {
+    use HasFactory;
     protected $fillable = ['subject_id', 'assessment_name', 'score', 'max_score', 'type', 'date'];
 
     protected function casts(): array

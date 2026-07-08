@@ -16,5 +16,14 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->render(function (\Illuminate\Http\Exceptions\ThrottleRequestsException $e, $request) {
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'error' => 'Too many requests. Please slow down.',
+                    'retry_after' => $e->getHeaders()['Retry-After'] ?? 60,
+                ], 429);
+            }
+
+            return back()->withErrors(['rate_limit' => 'Too many requests. Please slow down.']);
+        });
     })->create();
