@@ -11,7 +11,7 @@ class AdminSeeder extends Seeder
     {
         $admins = [
             ['email' => 'jeremy.sebudde@strathmore.edu',  'name' => 'Jeremy Sebudde'],
-            ['email' => 'mutungi.travis@strathmore.edu',  'name' => 'Mutungi Travis'],
+            ['email' => 'travis.mutungi@strathmore.edu',  'name' => 'Mutungi Travis'],
         ];
 
         foreach ($admins as $admin) {

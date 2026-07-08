@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ConnectRequest;
 use App\Models\Mark;
 use App\Models\Resource;
 use App\Models\RevisionSession;
@@ -33,6 +34,7 @@ class StudentDashboardController extends Controller
             ->limit(10)
             ->get();
 
+        $allSubjectScores = $user->subjectScores();
         $suggestedSubject = $user->suggestedSubject();
         $suggestionBreakdown = $user->suggestionBreakdown;
 
@@ -66,6 +68,7 @@ class StudentDashboardController extends Controller
                 LEFT JOIN universities un ON un.id = u.university_id
                 WHERE u.is_opted_in = 1
                   AND u.id != ?
+                  AND u.role != 'admin'
                 GROUP BY u.id, u.name, un.name, s.name
                 HAVING avg_percentage $comparison ?
                 ORDER BY
@@ -88,6 +91,19 @@ class StudentDashboardController extends Controller
             ]);
         }
 
-        return view('dashboard', compact('subjects', 'university', 'recentSessions', 'recentMarks', 'suggestedSubject', 'suggestionBreakdown', 'recommendedResources', 'peerSuggestions', 'peerComparisonMode'));
+        $pendingRequests = ConnectRequest::with('sender')
+            ->where('receiver_id', $user->id)
+            ->where('status', 'pending')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $rejectedNotifications = ConnectRequest::with('receiver')
+            ->where('sender_id', $user->id)
+            ->where('status', 'rejected')
+            ->where('responded_at', '>=', now()->subDay())
+            ->orderBy('responded_at', 'desc')
+            ->get();
+
+        return view('dashboard', compact('subjects', 'university', 'recentSessions', 'recentMarks', 'suggestedSubject', 'suggestionBreakdown', 'recommendedResources', 'peerSuggestions', 'peerComparisonMode', 'allSubjectScores', 'pendingRequests', 'rejectedNotifications'));
     }
 }

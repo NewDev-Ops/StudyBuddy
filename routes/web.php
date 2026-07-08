@@ -17,19 +17,27 @@ Route::get('/', function () {
 // Google Auth
 Route::post('/auth/google', [GoogleAuthController::class, 'handleGoogleToken']);
 
-// Onboarding routes
+// Onboarding GET routes — read-only, use onboarding middleware to redirect
+// completed users away from the form pages.
 Route::middleware(['auth', 'onboarding'])->prefix('onboarding')->name('onboarding.')->group(function () {
     Route::get('/step1', [OnboardingController::class, 'step1'])->name('step1');
-    Route::post('/step1', [OnboardingController::class, 'storeStep1'])->name('store1');
     Route::get('/step2', [OnboardingController::class, 'step2'])->name('step2');
+});
+
+// Onboarding mutation routes — must NOT be behind the onboarding middleware.
+// Once a user has subjects, hasCompletedOnboarding() returns true and the
+// middleware would intercept the POST, redirecting to dashboard before
+// the data is ever saved.
+Route::middleware(['auth'])->prefix('onboarding')->name('onboarding.')->group(function () {
+    Route::post('/step1', [OnboardingController::class, 'storeStep1'])->name('store1');
     Route::post('/step2/subject', [OnboardingController::class, 'storeSubject'])->name('storeSubject');
     Route::post('/step2/suggested', [OnboardingController::class, 'addSuggestedSubject'])->name('addSuggested');
     Route::delete('/step2/subject/{subject}', [OnboardingController::class, 'deleteSubject'])->name('deleteSubject');
     Route::post('/complete', [OnboardingController::class, 'complete'])->name('complete');
 });
 
-// Student routes
-Route::middleware(['auth', 'onboarding'])->group(function () {
+// Authenticated routes with global baseline throttle
+Route::middleware(['auth', 'onboarding', 'throttle:120,1'])->group(function () {
     Route::get('/dashboard', [StudentDashboardController::class, 'index'])->name('dashboard');
 
     Route::get('/feedback', [\App\Http\Controllers\FeedbackController::class, 'create'])->name('feedback.create');
@@ -52,11 +60,25 @@ Route::middleware(['auth', 'onboarding'])->group(function () {
     Route::patch('/profile/peer-network', [ProfileController::class, 'togglePeerNetwork'])->name('profile.peer-network.toggle');
     Route::patch('/profile/university', [ProfileController::class, 'updateUniversity'])->name('profile.university.update');
 
+    // Message routes — GET list (index) is under global throttle
     Route::get('/messages', [\App\Http\Controllers\MessageController::class, 'index'])->name('messages.index');
     Route::get('/messages/{user}', [\App\Http\Controllers\MessageController::class, 'show'])->name('messages.show');
-    Route::post('/messages/{user}', [\App\Http\Controllers\MessageController::class, 'store'])->name('messages.store');
+
+    // Chat request routes
+    Route::post('/chat-requests/{receiver}', [\App\Http\Controllers\ChatRequestController::class, 'send'])->name('chat-requests.send');
+    Route::patch('/chat-requests/{connectRequest}/accept', [\App\Http\Controllers\ChatRequestController::class, 'accept'])->name('chat-requests.accept');
+    Route::patch('/chat-requests/{connectRequest}/reject', [\App\Http\Controllers\ChatRequestController::class, 'reject'])->name('chat-requests.reject');
+    Route::delete('/chat-requests/{connectRequest}', [\App\Http\Controllers\ChatRequestController::class, 'cancel'])->name('chat-requests.cancel');
+    Route::get('/chat-requests/pending', [\App\Http\Controllers\ChatRequestController::class, 'pending'])->name('chat-requests.pending');
+
+    Route::get('/notifications', [\App\Http\Controllers\NotificationsController::class, 'index'])->name('notifications.index');
 
     Route::get('/report/student', [\App\Http\Controllers\ReportController::class, 'student'])->name('report.student');
+});
+
+// Message POST requires tighter rate limit (30/1min) to prevent spam
+Route::middleware(['auth', 'onboarding', 'throttle:30,1'])->group(function () {
+    Route::post('/messages/{user}', [\App\Http\Controllers\MessageController::class, 'store'])->name('messages.store');
 });
 
 Route::middleware(['auth'])->get('/subjects/search', [OnboardingController::class, 'search'])->name('subjects.search');
